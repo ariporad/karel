@@ -1,19 +1,20 @@
 var path = require('path');
 var webpack = require('webpack');
 
-const dev  = process.env.NODE_ENV !== 'production';
-const prod = process.env.NODE_ENV === 'production';
+const test = process.env.NODE_ENV === 'test' || process.env.TEST || process.env.CI;
+const dev  = process.env.NODE_ENV !== 'production' && !test;
+const prod = process.env.NODE_ENV === 'production' && !test;
 module.exports = {
-  devtool: dev ? 'sourcemap' : 'hidden-source-map',
-  entry: dev ? [
+  devtool: dev || test ? 'sourcemap' : 'hidden-source-map',
+  entry: dev || test ? [
     'webpack-dev-server/client?http://localhost:3000',
     'webpack/hot/only-dev-server',
-    './src/index'
+    test ? 'mocha!./src/test.js' : './src/index',
   ] : './src/index',
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js',
-    publicPath: '/static/'
+    filename: test && 0 ? 'test.js' : 'bundle.js',
+    publicPath: test && 0 ? '/' : '/static/'
   },
   plugins: [
     new webpack.ProvidePlugin({

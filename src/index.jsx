@@ -3,7 +3,13 @@ import RedBox from 'redbox-react';
 import { store } from './redux';
 import App from './App';
 
-const rootEl = document.getElementById('root');
+let rootEl = document.getElementById('root');
+if (!rootEl) {
+  rootEl = document.createElement('div');
+  rootEl.id = 'root';
+  rootEl.style = 'display: none;';
+  document.body.appendChild(rootEl);
+}
 
 // DIY HMR: https://github.com/reactjs/redux/pull/1455
 let render = () => {
