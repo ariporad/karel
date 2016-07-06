@@ -1,16 +1,12 @@
 {
-  "name": "react-hot-boilerplate",
-  "version": "1.0.0",
-  "description": "Boilerplate for ReactJS project with hot code reloading",
+  "name": "karel",
+  "version": "0.0.1",
+  "description": "A fun way to learn to code",
   "scripts": {
     "start": "NODE_ENV=development webpack-dev-server --hot --open --history-api-fallback --port 8080",
     "test": "NODE_ENV=test webpack-dev-server --hot --open --history-api-fallback --port 8081",
     "dev": "concurrently \"npm run start -s\" \"npm run test -s\"",
     "lint": "eslint src"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gaearon/react-hot-boilerplate.git"
   },
   "keywords": [
     "react",
@@ -23,12 +19,7 @@
     "edit",
     "webpack"
   ],
-  "author": "Dan Abramov <dan.abramov@me.com> (http://github.com/gaearon)",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/gaearon/react-hot-boilerplate/issues"
-  },
-  "homepage": "https://github.com/gaearon/react-hot-boilerplate",
   "devDependencies": {
     "babel-core": "^6.0.20",
     "babel-eslint": "^4.1.3",
@@ -58,5 +49,15 @@
     "react-redux": "^4.4.5",
     "redux": "^3.5.2",
     "redux-thunk": "^2.1.0"
-  }
+  },
+  "main": "src/index.jsx",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ariporad/karel.git"
+  },
+  "author": "Ari Porad <ari@ariporad.com> (http://ariporad.com/)",
+  "bugs": {
+    "url": "https://github.com/ariporad/karel/issues"
+  },
+  "homepage": "https://github.com/ariporad/karel#readme"
 }
