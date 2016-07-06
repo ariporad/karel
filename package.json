@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "A fun way to learn to code",
   "scripts": {
-    "start": "NODE_ENV=development webpack-dev-server --hot --open --history-api-fallback --port 8080",
-    "test": "NODE_ENV=test webpack-dev-server --hot --open --history-api-fallback --port 8081",
+    "start": "NODE_ENV=development webpack-dev-server --hot --inline  --open --history-api-fallback --port 8080",
+    "test": "NODE_ENV=test webpack-dev-server --hot --inline --open --port 8081",
     "dev": "concurrently \"npm run start -s\" \"npm run test -s\"",
     "lint": "eslint src"
   },
@@ -27,7 +27,11 @@
     "babel-preset-es2015-webpack": "^6.4.1",
     "babel-preset-react": "^6.0.15",
     "babel-preset-stage-0": "^6.0.15",
+    "chai": "^3.5.0",
+    "chai-enzyme": "^0.5.0",
     "concurrently": "^2.2.0",
+    "dirty-chai": "^1.2.2",
+    "enzyme": "^2.3.0",
     "eslint": "^2.13.1",
     "eslint-config-airbnb": "^9.0.1",
     "eslint-plugin-import": "^1.10.1",
@@ -35,7 +39,10 @@
     "eslint-plugin-react": "^5.2.2",
     "mocha": "^2.5.3",
     "mocha-loader": "^0.7.1",
+    "react-addons-test-utils": "^15.2.0",
     "redbox-react": "^1.2.10",
+    "sinon": "^2.0.0-pre",
+    "sinon-chai": "^2.8.0",
     "webpack": "^2.1.0-beta.15",
     "webpack-dev-server": "^2.1.0-beta.0"
   },
