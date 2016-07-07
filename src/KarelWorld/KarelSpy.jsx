@@ -1,4 +1,4 @@
-export const KarelSpy = ({ cx, cy, dir, size }) => {
+const KarelSpy = ({ cx, cy, dir, size }) => {
   let x = cx - size / 2;
   let y = cy - size / 2;
   let pad = size / 8;
@@ -10,4 +10,6 @@ export const KarelSpy = ({ cx, cy, dir, size }) => {
     />
   );
 };
+
+export default KarelSpy;
 

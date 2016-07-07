@@ -1,4 +1,4 @@
-import { KarelWorld } from './KarelWorld/KarelWorld';
+import KarelWorld from './KarelWorld/KarelWorld';
 const App = (/* props */) => (
   <KarelWorld size={100} />
 );

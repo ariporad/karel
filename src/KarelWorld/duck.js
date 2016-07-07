@@ -6,15 +6,13 @@ import { parseWorld } from './parseWorld';
  */
 
 export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
-export const TURN_LEFT    = 'karel/KarelWorld/TURN_LEFT';
-export const RESET        = 'karel/KarelWorld/RESET';
-export const KAREL_DIED   = 'karel/KarelWorld/KAREL_DIED';
-
-// TODO: Action Creators
+export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
+export const RESET = 'karel/KarelWorld/RESET';
+export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 
 export const reset = () => ({ type: RESET });
 
-const karelDied   = err => ({ type: KAREL_DIED, error: true, payload: err });
+const karelDied = err => ({ type: KAREL_DIED, error: true, payload: err });
 const handleDeath = actionCreator => (...args) => dispatch => {
   try {
     return dispatch(actionCreator(...args));
@@ -24,11 +22,12 @@ const handleDeath = actionCreator => (...args) => dispatch => {
   }
 };
 
-export const moveForward = handleDeath(line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } }));
-export const turnLeft    = handleDeath(line => ({ type: TURN_LEFT,    meta: { line, cmd: 'turnLeft();'    } }));
-
-global.moveForward = moveForward;
-global.turnLeft = turnLeft;
+export const moveForward = handleDeath(
+  line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } })
+);
+export const turnLeft = handleDeath(
+  line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } })
+);
 
 /**
  * Reducer
@@ -47,14 +46,14 @@ export const reducer = (state = { ...parseWorld(DEFAULT_WORLD), err: null }, act
   if ([MOVE_FORWARD, TURN_LEFT].indexOf(action.type) !== -1) {
     bombs = state.bombs.map(bomb => {
       if (typeof bomb.limit === 'boolean') return bomb;
-      bomb = { ...bomb, limit: bomb.limit - 1 };
-      if (bomb.limit <= 0) throw KarelError('A bomb exploded!', action.meta);
-      return bomb;
+      const limit = bomb.limit - 1;
+      if (limit <= 0) throw KarelError('A bomb exploded!', action.meta);
+      return { ...bomb, limit };
     });
   }
   switch (action.type) {
-    case MOVE_FORWARD:
-      let { x, y, dir } = state.karel;
+    case MOVE_FORWARD: {
+      let { x, y, dir } = state.karel; // eslint-disable-line prefer-const
       if (dir === 0) {        // Right
         if (state.lasers[y][x]) throw KarelError('Karel hit a laser tripwire!', action.meta);
         x++;
@@ -62,14 +61,18 @@ export const reducer = (state = { ...parseWorld(DEFAULT_WORLD), err: null }, act
         y--;
       } else if (dir === 2) { // Left
         x--;
-        // This goes after we x--, because we need to check if there's a laser to the right of our new spot.
+        // This is after x-- because we need to check if theres a laser to the right of our new spot
         if (state.lasers[y][x]) throw KarelError('Karel triggered a laser tripwire!', action.meta);
       } else if (dir === 3) { // Down
         y++;
       }
-      if (x >= state.width || y >= state.height || y < 0 || x < 0) throw KarelError('Karel hit a wall!', action.meta);
+      if (x >= state.width || y >= state.height || y < 0 || x < 0) {
+        throw KarelError('Karel hit a wall!', action.meta);
+      }
       return { ...state, karel: { ...state.karel, x, y }, bombs };
-    case TURN_LEFT: return { ...state, karel: { ...state.karel, dir: (state.karel.dir + 1) % 4 }, bombs };
+    }
+    case TURN_LEFT:
+      return { ...state, karel: { ...state.karel, dir: (state.karel.dir + 1) % 4 }, bombs };
     case KAREL_DIED: return { ...state, err: action.payload };
     case RESET: return { ...state, err: null, ...parseWorld(DEFAULT_WORLD) };
     default: return state;

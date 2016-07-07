@@ -1,10 +1,10 @@
 import Radium from 'radium';
 import { connect }  from 'react-redux';
-import { KarelSpy } from './KarelSpy';
-import { runKarel } from './KarelRunner';
-import { ErrorOverlay } from './ErrorOverlay';
+import KarelSpy from './KarelSpy';
+import runKarel from './KarelRunner';
+import ErrorOverlay from './ErrorOverlay';
 
-export const generateBorders = (width, height, size) => {
+const generateBorders = (width, height, size) => {
   const padding = LASER_WIDTH / 2;
   const fullX = width * size - padding;
   const fullY = height * size - padding;
@@ -32,7 +32,7 @@ const styles = {
   }
 };
 const cpos = size => pos => pos * size + size / 2;
-export let KarelWorld = Radium(({ size, karel, bombs, lasers, height, width, err }) => {
+let KarelWorld = Radium(({ size, karel, bombs, lasers, height, width, err }) => {
   const objects = [];
   const c = cpos(size);
   for (let y = 0; y < height; ++y) {
@@ -67,4 +67,5 @@ KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err }
   return { karel, bombs, lasers, height, width, err };
 })(KarelWorld);
 
+export default KarelWorld;
 

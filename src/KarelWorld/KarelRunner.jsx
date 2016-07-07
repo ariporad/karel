@@ -8,15 +8,15 @@ import { generate as randomString } from 'randomstring';
  *   as we're rendering it.
  */
 
-export const generateSecretVarName = () => `___karel_internals_${randomString()}___`;
+const generateSecretVarName = () => `___karel_internals_${randomString()}___`;
 
-export const getLineNum = (offset = 0) => {
+const getLineNum = (offset = 0) => {
   let { lineNumber: line } = parseStack(new Error)[2];
   line += offset;
   return line;
 };
 
-export const prepFunctions = (actions, lineOffset, functions) => {
+const prepFunctions = (actions, lineOffset, functions) => {
   const names  = [];
   const values = [];
   const hasProp = {}.hasOwnProperty;
@@ -42,7 +42,7 @@ export const prepFunctions = (actions, lineOffset, functions) => {
  * @param functions<String: Function>: A maping of functions to expose to the code. The key is the exposed name,
  *                                     the value is a redux action-creator which creates the relevant actions.
  */
-export const runKarel = (code, functions) => {
+const runKarel = (code, functions) => {
   const actions = [];
   const __karel__ = generateSecretVarName();
   let lineOffset;

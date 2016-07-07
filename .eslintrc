@@ -1,7 +1,26 @@
 {
   "extends": "airbnb",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "impliedStrict": true,
+      "jsx": true,
+      "experimentalObjectRestSpread": true,
+    }
+  },
+  "rules": {
+    "new-cap": 0
+  },
+  "env": {
+    "mocha": true,
+  },
   "globals": {
     "React": false,
     "ReactDOM": false,
+    "Radium": false,
+    // Ideally, we would only have these for test files. But since they're all in the same dir, we can't.
+    "expect": false,
+    "sinon": false,
   }
 }

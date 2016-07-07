@@ -1,5 +1,3 @@
-import Radium from 'radium';
-
 const ERROR_BOX_HEIGHT = 150;
 const ERROR_BOX_WIDTH  = 300;
 
@@ -18,7 +16,7 @@ const styles = {
   },
 };
 
-export const ErrorOverlay = Radium(({ err: { message, line, cmd }, height, width, size }) => {
+const ErrorOverlay = Radium(({ err: { message, line, cmd }, height, width, size }) => {
   // We don't care about the grid.
   height = height * size;
   width = width * size;
@@ -48,4 +46,6 @@ export const ErrorOverlay = Radium(({ err: { message, line, cmd }, height, width
     </g>
   );
 });
+
+export default ErrorOverlay;
 
