@@ -11,23 +11,10 @@ export const RESET = 'karel/KarelWorld/RESET';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 
 export const reset = () => ({ type: RESET });
+export const karelDied = err => ({ type: KAREL_DIED, error: true, payload: err });
 
-const karelDied = err => ({ type: KAREL_DIED, error: true, payload: err });
-const handleDeath = actionCreator => (...args) => dispatch => {
-  try {
-    return dispatch(actionCreator(...args));
-  } catch (err) {
-    if (err.karel) return dispatch(karelDied(err));
-    throw err;
-  }
-};
-
-export const moveForward = handleDeath(
-  line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } })
-);
-export const turnLeft = handleDeath(
-  line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } })
-);
+export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } })
+export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } })
 
 /**
  * Reducer

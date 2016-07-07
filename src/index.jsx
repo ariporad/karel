@@ -1,7 +1,9 @@
 import { Provider } from 'react-redux';
 import RedBox from 'redbox-react';
-import { store } from './redux';
+import configureStore from './redux';
 import App from './App';
+
+const store = configureStore();
 
 let rootEl = document.getElementById('root');
 if (!rootEl) {
@@ -20,7 +22,6 @@ let render = () => {
     </Provider>,
     rootEl
   );
-
 };
 
 if (module.hot) {

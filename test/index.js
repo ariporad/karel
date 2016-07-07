@@ -5,6 +5,9 @@ import dirtyChai from 'dirty-chai';
 import chaiEnzyme from 'chai-enzyme';
 import sinonChai from 'sinon-chai';
 
+// https://github.com/mochajs/mocha/issues/1348#issuecomment-69261444
+chai.config.truncateThreshold = 0;
+
 chai.use(dirtyChai);
 chai.use(chaiEnzyme());
 //chai.use(sinonChai());
