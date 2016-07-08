@@ -1,4 +1,4 @@
-export const KarelError = (msg, { cmd = null, line = null }, err = new Error) => {
+export const KarelError = (msg, { cmd = null, line = null } = {}, err = new Error) => {
   if (err.name === 'Error') err.name = 'KarelError';
   err.message = msg;
   err.karel = true;

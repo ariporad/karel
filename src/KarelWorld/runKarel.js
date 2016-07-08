@@ -35,8 +35,8 @@ const prepFunctions = (store, getLineOffset, functions) => {
     if (action && (typeof action === 'function' || hasProp.call(action, 'type'))) {
       // We dispatch all of the actions (to a copy of the store) so that we can support conditionals
       // (we have to keep track of the world state) and to stop execution if an KarelError is thrown
-      store.dispatch(action);
       actions.push(action);
+      store.dispatch(action);
     }
     return retVal;
   };
@@ -77,12 +77,14 @@ const runKarel = (code, functions, store) => {
   try {
     new Function(__karel__, ...names, code)(karelInternals, ...values);
   } catch (e) {
+    if (e.earlyExit) return actions;
     console.log(e.stack);
     if (!e.karel) {
       // (At least in Chrome), syntax errors in new Function don't report where or what they are,
       // just that there's *something* wrong. (Neither does eval)
       e = KarelError(e.message, { line: null }, e);
     }
+    actions.pop(); // Get rid of the failed command.
     actions.push(karelDied(e));
   }
   return actions;

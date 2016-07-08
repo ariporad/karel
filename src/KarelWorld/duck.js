@@ -12,8 +12,21 @@ export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
 export const PICKUP_CROWN = 'karel/KarelWorld/PICKUP_CROWN';
 export const DIFFUSE_BOMB = 'karel/KarelWorld/DIFFUSE_BOMB';
 export const RESET = 'karel/KarelWorld/RESET';
+export const WIN = 'karel/KarelWorld/WIN';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
+
+const checkForWin = (dispatch, getState) => {
+  const state = getState();
+  if (state.KarelWorld.bombs.length === 0 && state.KarelWorld.crown === null) {
+    dispatch({ type: WIN });
+    const err = KarelError('World Complete');
+    err.earlyExit = true;
+    throw err;
+    return true;
+  }
+  return false;
+};
 
 export const reset = () => ({ type: RESET });
 export const setWorld = world => (dispatch, getState) => {
@@ -29,8 +42,18 @@ export const karelDied = err => dispatch => {
 
 export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } });
 export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } });
-export const pickupCrown = line => ({ type: PICKUP_CROWN, meta: { line, cmd: 'pickupCrown();' } });
-export const diffuseBomb = line => ({ type: DIFFUSE_BOMB, meta: { line, cmd: 'diffuseBomb();' } });
+export const pickupCrown = line => ({ action(dispatch, getState) {
+  const action = { type: PICKUP_CROWN, meta: { line, cmd: 'pickupCrown();' } };
+  dispatch(action);
+  checkForWin(dispatch, getState);
+  return action;
+} });
+export const diffuseBomb = line => ({ action(dispatch, getState) {
+  const action = { type: DIFFUSE_BOMB, meta: { line, cmd: 'diffuseBomb();' } };
+  dispatch(action);
+  checkForWin(dispatch, getState);
+  return action;
+} });
 
 /**
  * Reducer
@@ -60,12 +83,14 @@ export const reducer = (
     height: 1,
     width: 1,
     err: null,
+    won: false,
   },
   action
 ) => {
   // Decrement all the bombs
   let bombs = state.bombs;
-  if ([MOVE_FORWARD, TURN_LEFT, PICKUP_CROWN].indexOf(action.type) !== -1) {
+  if ([MOVE_FORWARD, TURN_LEFT, PICKUP_CROWN, DIFFUSE_BOMB].indexOf(action.type) !== -1) {
+    // These are all no-ops if not running.
     bombs = state.bombs.map(bomb => {
       if (typeof bomb.limit === 'boolean') return bomb;
       const limit = bomb.limit - 1;
@@ -112,9 +137,9 @@ export const reducer = (
       if (!bomb) throw new KarelError('There\'s no bomb here!', action.meta);
       bombs = bombs.filter(b => b !== bomb);
       return { ...state, bombs };
-
+    case WIN: return { ...state, won: true, running: false, debugging: false };
     case KAREL_DIED: return { ...state, err: action.payload };
-    case RESET: return { ...state, err: null, ...parseWorld(DEFAULT_WORLD) };
+    case RESET: return { ...state, err: null, won: false, ...parseWorld(DEFAULT_WORLD) };
     default: return state;
   }
 };

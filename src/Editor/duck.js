@@ -8,8 +8,6 @@ export const DEBUG = 'karel/Editor/DEBUG';
 export const NEXT = 'karel/Editor/NEXT';
 export const STOP = 'karel/Editor/STOP';
 
-debugger;
-
 const getKarelFuncs = () => ({
   moveForward: actionCreators.moveForward,
   turnLeft: actionCreators.turnLeft,
@@ -18,13 +16,18 @@ const getKarelFuncs = () => ({
 });
 export const setCode = code => ({ type: SET_CODE, payload: code });
 
-// I'm not really sure I like having the editor control the running of the code, but I suppose it's
-// fine. I'm not sure where else it would go.
-export const run = () => (dispatch, getState) => {
+const startRunning = (getState, dispatch) => {
   dispatch(actionCreators.reset());
   const state = getState();
   const store = configureStore(state);
   const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
+  return actions;
+};
+
+// I'm not really sure I like having the editor control the running of the code, but I suppose it's
+// fine. I'm not sure where else it would go.
+export const run = () => (dispatch, getState) => {
+  const actions = startRunning(getState, dispatch);
 
   dispatch({ type: RUN, payload: actions });
   const interval = setInterval(() => {
@@ -35,11 +38,7 @@ export const run = () => (dispatch, getState) => {
 };
 
 export const debug = () => (dispatch, getState) => {
-  dispatch(actionCreators.reset());
-  const state = getState();
-  const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
-
+  const actions = startRunning(getState, dispatch);
   dispatch({ type: DEBUG, payload: actions });
   dispatch(next());
 };
@@ -55,12 +54,13 @@ export const playOut = () => (dispatch, getState) => {
 export const next = () => (dispatch, getState) => {
   const state = getState();
   if (!state.Editor.running) throw new Error('Call run/debug before next!');
-  if (state.Editor.actions.length === 0) { // If we just dispatched the last action
+  if (state.Editor.actions.length === 0) {
     dispatch({ type: STOP });
     return false; // No more actions
   } else {
-    const action = state.Editor.actions[0];
-    dispatch(action);
+    let action = state.Editor.actions[0];
+    // This way thunks still work (dispatch returns the action by default)
+    action = dispatch(action);
     dispatch({ type: NEXT, meta: action.meta });
     return true; // Yes more actions
   }

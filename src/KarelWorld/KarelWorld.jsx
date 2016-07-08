@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import KarelSpy from './KarelSpy';
 import runKarel from './runKarel';
 import ErrorOverlay from './ErrorOverlay';
+import Overlay from './Overlay';
 import crownSVG from 'file!./crown.svg';
 
 const generateBorders = (width, height, size) => {
@@ -38,7 +39,7 @@ const styles = {
 };
 const cpos = size => pos => pos * size + size / 2;
 const SIZE = 100;
-let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crown }) => {
+let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crown, won }) => {
   const objects = [];
   const c = cpos(SIZE);
   for (let y = 0; y < height; ++y) {
@@ -82,13 +83,14 @@ let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crow
         {objects}
         <KarelSpy cx={c(karel.x)} cy={c(karel.y)} dir={karel.dir} size={SIZE} />
         {err && <ErrorOverlay err={err} width={width} height={height} size={SIZE} />}
+        {won && <Overlay width={width * SIZE} height={height * SIZE} title={'World Complete!'} />}
       </svg>
     </div>
   );
 });
 
-KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err, crown } }) => {
-  return { karel, bombs, lasers, height, width, err, crown };
+KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err, crown, won } }) => {
+  return { karel, bombs, lasers, height, width, err, crown, won };
 })(KarelWorld);
 
 export default KarelWorld;
