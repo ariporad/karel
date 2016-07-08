@@ -10,6 +10,7 @@ import { setTitleDesc } from '../TopBar/duck';
 export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
 export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
 export const PICKUP_CROWN = 'karel/KarelWorld/PICKUP_CROWN';
+export const DIFFUSE_BOMB = 'karel/KarelWorld/DIFFUSE_BOMB';
 export const RESET = 'karel/KarelWorld/RESET';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
@@ -29,6 +30,7 @@ export const karelDied = err => dispatch => {
 export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } });
 export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } });
 export const pickupCrown = line => ({ type: PICKUP_CROWN, meta: { line, cmd: 'pickupCrown();' } });
+export const diffuseBomb = line => ({ type: DIFFUSE_BOMB, meta: { line, cmd: 'diffuseBomb();' } });
 
 /**
  * Reducer
@@ -102,6 +104,15 @@ export const reducer = (
           throw new KarelError('There\'s no crown here!', action.meta);
         }
       return { ...state, crown: null, bombs };
+    case DIFFUSE_BOMB:
+      const bomb = bombs.reduce(
+        (bomb, b) => b.x === state.karel.x && b.y === state.karel.y ? b : bomb,
+        null
+      );
+      if (!bomb) throw new KarelError('There\'s no bomb here!', action.meta);
+      bombs = bombs.filter(b => b !== bomb);
+      return { ...state, bombs };
+
     case KAREL_DIED: return { ...state, err: action.payload };
     case RESET: return { ...state, err: null, ...parseWorld(DEFAULT_WORLD) };
     default: return state;

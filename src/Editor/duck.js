@@ -1,6 +1,6 @@
 import configureStore from '../redux';
 import runKarel from '../KarelWorld/runKarel';
-import { moveForward, turnLeft, pickupCrown, reset } from '../KarelWorld/duck';
+import * as actionCreators from '../KarelWorld/duck';
 
 export const SET_CODE = 'karel/Editor/SET_CODE';
 export const RUN = 'karel/Editor/RUN';
@@ -8,15 +8,23 @@ export const DEBUG = 'karel/Editor/DEBUG';
 export const NEXT = 'karel/Editor/NEXT';
 export const STOP = 'karel/Editor/STOP';
 
+debugger;
+
+const getKarelFuncs = () => ({
+  moveForward: actionCreators.moveForward,
+  turnLeft: actionCreators.turnLeft,
+  pickupCrown: actionCreators.pickupCrown,
+  diffuseBomb: actionCreators.diffuseBomb,
+});
 export const setCode = code => ({ type: SET_CODE, payload: code });
 
 // I'm not really sure I like having the editor control the running of the code, but I suppose it's
 // fine. I'm not sure where else it would go.
 export const run = () => (dispatch, getState) => {
-  dispatch(reset());
+  dispatch(actionCreators.reset());
   const state = getState();
   const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, { moveForward, turnLeft, pickupCrown }, store);
+  const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
 
   dispatch({ type: RUN, payload: actions });
   const interval = setInterval(() => {
@@ -27,10 +35,10 @@ export const run = () => (dispatch, getState) => {
 };
 
 export const debug = () => (dispatch, getState) => {
-  dispatch(reset());
+  dispatch(actionCreators.reset());
   const state = getState();
   const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, { moveForward, turnLeft, pickupCrown }, store);
+  const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
 
   dispatch({ type: DEBUG, payload: actions });
   dispatch(next());
