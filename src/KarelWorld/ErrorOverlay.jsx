@@ -21,6 +21,33 @@ const ErrorOverlay = Radium(({ err: { message, line, cmd }, height, width, size 
   height = height * size;
   width = width * size;
 
+  let msg;
+  if (typeof line === 'number' && typeof cmd === 'string') {
+    msg = (
+      <text
+        textAnchor="middle"
+        x={width / 2}
+        y={height / 2 + 15}
+        style={[styles.text, styles.stack]}
+        fill="#FFFFFF"
+      >
+        At <tspan style={[styles.code]}>{cmd}</tspan> on line {line}.
+      </text>
+    );
+  } else if (typeof line === 'number') {
+    msg = (
+      <text
+        textAnchor="middle"
+        x={width / 2}
+        y={height / 2 + 15}
+        style={[styles.text, styles.stack]}
+        fill="#FFFFFF"
+      >
+        On line {line}.
+      </text>
+    );
+  }
+
   return (
     <g>
       <rect x={0} y={0} width={width} height={height} fill="#888888" opacity={0.9} />
@@ -40,9 +67,7 @@ const ErrorOverlay = Radium(({ err: { message, line, cmd }, height, width, size 
         style={[styles.text, styles.title]}
         fill="#FFFFFF"
       >{message}</text>
-      <text textAnchor="middle" x={width / 2} y={height / 2 + 15} style={[styles.text, styles.stack]} fill="#FFFFFF">
-        At <tspan style={[styles.code]}>{cmd}</tspan> on line {line}.
-      </text>
+      {msg}
     </g>
   );
 });

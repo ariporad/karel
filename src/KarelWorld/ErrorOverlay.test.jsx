@@ -28,4 +28,23 @@ describe('<ErrorOverlay />', () => {
     expect(text).to.contain('test();');
     expect(text).to.contain('42');
   });
+
+  it('does reasonable things when there\'s no command', () => {
+    const text = render(
+      <ErrorOverlay err={{ message: 'Test Passed!', line: 42 }} height={4} width={2} size={100} />
+    ).text();
+    expect(text).to.not.contain('At'); // Not At cmd.
+    expect(text).to.contain('On'); // Caps, because it's the start of the sentace.
+    // Still prints the line
+    expect(text).to.contain('42');
+    expect(text).to.contain('line');
+  });
+
+  it('does reasonable things when there\'s no line', () => {
+    const el = mount(
+      <ErrorOverlay err={{ message: 'Test Passed!' }} height={4} width={2} size={100} />
+    );
+    expect(el.find('text').length).to.equal(1);
+    expect(el.text()).to.contain('Test Passed!');
+  });
 });
