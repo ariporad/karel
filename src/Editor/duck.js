@@ -1,6 +1,6 @@
 import configureStore from '../redux';
 import runKarel from '../KarelWorld/runKarel';
-import { moveForward, turnLeft, reset } from '../KarelWorld/duck';
+import { moveForward, turnLeft, pickupCrown, reset } from '../KarelWorld/duck';
 
 export const SET_CODE = 'karel/Editor/SET_CODE';
 export const RUN = 'karel/Editor/RUN';
@@ -16,7 +16,7 @@ export const run = () => (dispatch, getState) => {
   dispatch(reset());
   const state = getState();
   const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, { moveForward, turnLeft }, store);
+  const actions = runKarel(state.Editor.code, { moveForward, turnLeft, pickupCrown }, store);
 
   dispatch({ type: RUN, payload: actions });
   const interval = setInterval(() => {
@@ -30,7 +30,7 @@ export const debug = () => (dispatch, getState) => {
   dispatch(reset());
   const state = getState();
   const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, { moveForward, turnLeft }, store);
+  const actions = runKarel(state.Editor.code, { moveForward, turnLeft, pickupCrown }, store);
 
   dispatch({ type: DEBUG, payload: actions });
   dispatch(next());
@@ -58,17 +58,15 @@ export const next = () => (dispatch, getState) => {
   }
 };
 
-const DEFAULT_CODE = `moveForward();\nturnLeft();\nmoveForward();\n`;
-
 export const reducer = (
-  state = { code: DEFAULT_CODE, running: false, debugging: false, actions: null, line: null },
+  state = { code: 'loading();', running: false, debugging: false, actions: null, line: null },
   action
 ) => {
   switch (action.type) {
     case SET_CODE: return { ...state, code: action.payload };
     case RUN: return { ...state, running: true, actions: action.payload };
     case DEBUG: return { ...state, running: true, debugging: true,  actions: action.payload };
-    case NEXT: return { ...state, actions: state.actions.slice(1), line: action.meta.line };
+    case NEXT: return { ...state, actions: (state.actions || []).slice(1), line: action.meta.line };
     case STOP: return { ...state, running: false, debugging: false, actions: null, line: null };
     default: return state;
   }

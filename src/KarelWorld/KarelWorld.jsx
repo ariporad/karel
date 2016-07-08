@@ -61,11 +61,20 @@ let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crow
       >{bomb.limit}</text>
     );
   });
-  const crownX = crown.x * SIZE + SIZE * .125;
-  const crownY = crown.y * SIZE + SIZE * .125;
-  if (crown) objects.push(
-    <image x={crownX} y={crownY} width={SIZE * .75} height={SIZE * .75} xlinkHref={crownSVG} />
-  );
+  if (crown){
+    const crownX = crown.x * SIZE + SIZE * .125;
+    const crownY = crown.y * SIZE + SIZE * .125;
+    objects.push(
+      <image
+        key='crown'
+        x={crownX}
+        y={crownY}
+        width={SIZE * .75}
+        height={SIZE * .75}
+        xlinkHref={crownSVG}
+      />
+    );
+  }
   return (
     <div style={style}>
       <svg style={styles.svg} viewBox={`0 0 ${width * SIZE} ${height * SIZE}`}>

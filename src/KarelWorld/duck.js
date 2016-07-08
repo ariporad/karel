@@ -9,6 +9,7 @@ import { setTitleDesc } from '../TopBar/duck';
 
 export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
 export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
+export const PICKUP_CROWN = 'karel/KarelWorld/PICKUP_CROWN';
 export const RESET = 'karel/KarelWorld/RESET';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
@@ -25,8 +26,9 @@ export const karelDied = err => dispatch => {
   dispatch({ type: STOP });
 }
 
-export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } })
-export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } })
+export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } });
+export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } });
+export const pickupCrown = line => ({ type: PICKUP_CROWN, meta: { line, cmd: 'pickupCrown();' } });
 
 /**
  * Reducer
@@ -51,7 +53,7 @@ export const reducer = (
   state = {
     bombs: [],
     karel: { x: 0, y: 0, dir: 0 },
-    crown: { x: 0, y: 0 },
+    crown: null,
     lasers: [[false]],
     height: 1,
     width: 1,
@@ -61,7 +63,7 @@ export const reducer = (
 ) => {
   // Decrement all the bombs
   let bombs = state.bombs;
-  if ([MOVE_FORWARD, TURN_LEFT].indexOf(action.type) !== -1) {
+  if ([MOVE_FORWARD, TURN_LEFT, PICKUP_CROWN].indexOf(action.type) !== -1) {
     bombs = state.bombs.map(bomb => {
       if (typeof bomb.limit === 'boolean') return bomb;
       const limit = bomb.limit - 1;
@@ -92,6 +94,14 @@ export const reducer = (
     }
     case TURN_LEFT:
       return { ...state, karel: { ...state.karel, dir: (state.karel.dir + 1) % 4 }, bombs };
+    case PICKUP_CROWN:
+      if(
+        !state.crown ||
+        state.crown.x !== state.karel.x ||
+        state.crown.y !== state.karel.y) {
+          throw new KarelError('There\'s no crown here!', action.meta);
+        }
+      return { ...state, crown: null, bombs };
     case KAREL_DIED: return { ...state, err: action.payload };
     case RESET: return { ...state, err: null, ...parseWorld(DEFAULT_WORLD) };
     default: return state;

@@ -32,7 +32,7 @@ const prepFunctions = (store, getLineOffset, functions) => {
       action = ret;
       retVal = undefined;
     }
-    if (action && hasProp.call(action, 'type')) {
+    if (action && (typeof action === 'function' || hasProp.call(action, 'type'))) {
       // We dispatch all of the actions (to a copy of the store) so that we can support conditionals
       // (we have to keep track of the world state) and to stop execution if an KarelError is thrown
       store.dispatch(action);
