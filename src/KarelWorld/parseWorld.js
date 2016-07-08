@@ -8,6 +8,7 @@ export const parseWorld = text => {
 const parseKarelWorld = text => {
   const lines = text.trim().toUpperCase().split('\n');
   let karel = { x: 0, y: 0, dir: 0 };
+  let crown = null;
   const bombs = []; // { x: 0, y: 0, limit: Num | false }
   const lasers = [];
   const height = lines.length;
@@ -26,10 +27,11 @@ const parseKarelWorld = text => {
       }
       if (line[i] === '#') bombs.push({ x, y, limit: false });
       if (line[i] === '*') karel = { x, y, dir: 0 };
+      if (line[i] === '@') crown = { x, y };
       lasers[y][x] = line[i + 1] === '|';
       if (y === 0) width++; // Each loop is one 'space', but it's >=1 char.
     }
   }
-  return { karel, bombs, lasers, height, width };
+  return { karel, bombs, lasers, height, width, crown };
 };
 

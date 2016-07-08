@@ -15,8 +15,8 @@ export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
 
 export const reset = () => ({ type: RESET });
 export const setWorld = world => (dispatch, getState) => {
-  const { title, desc, code, height, width, karel, bombs, lasers } = parseWorld(world);
-  dispatch({ type: SET_WORLD, payload: { height, width, karel, bombs, lasers } });
+  const { title, desc, code, height, width, karel, bombs, lasers, crown } = parseWorld(world);
+  dispatch({ type: SET_WORLD, payload: { height, width, karel, bombs, lasers, crown } });
   dispatch(setCode(code));
   dispatch(setTitleDesc(title, desc));
 };
@@ -43,12 +43,20 @@ turnLeft();
 ---
 . .|9 .
 123 .|.|.
-. .|.|#
+. @|.|#
 * . . .
 `;
 
 export const reducer = (
-  state = { bombs: [], karel: { x: 0, y: 0, dir: 0 }, lasers: [[false]], height: 1, width: 1,  err: null },
+  state = {
+    bombs: [],
+    karel: { x: 0, y: 0, dir: 0 },
+    crown: { x: 0, y: 0 },
+    lasers: [[false]],
+    height: 1,
+    width: 1,
+    err: null,
+  },
   action
 ) => {
   // Decrement all the bombs
