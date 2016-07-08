@@ -1,4 +1,11 @@
+// Text is 'title\ndescription\n---\ndefaultCode()\n---\n. . . .'
 export const parseWorld = text => {
+  let [ titleAndDesc, code, world ] = text.split('\n---\n');
+  let [ title, ...desc ] = titleAndDesc.split('\n').map(line => line.trim()).filter(line => !!line);
+  desc = desc.join('\n');
+  return { title, desc, code, ...parseKarelWorld(world) };
+};
+const parseKarelWorld = text => {
   const lines = text.trim().toUpperCase().split('\n');
   let karel = { x: 0, y: 0, dir: 0 };
   const bombs = []; // { x: 0, y: 0, limit: Num | false }

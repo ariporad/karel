@@ -5,8 +5,8 @@ import { next, playOut, debug, run } from '../Editor/duck';
 const styles = {
   container: {
     display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     flexDirecton: 'row',
   },
   button: {
@@ -17,13 +17,39 @@ const styles = {
     padding: 5,
     textAlign: 'center',
     borderRadius: 5,
+    display: 'inline-block',
+  },
+  titleContainer: {
+    margin: 5,
+    flexGrow: 100,
+    flexShrink: 100,
+  },
+  title: {
+    margin: 0,
+    marginBottom: 5,
+    padding: 0,
+  },
+  desc: {
+    margin: 0,
+    padding: 0,
+  },
+  text: {
+    fontFamily: 'Arial, sans-serif',
+  },
+  buttonContainer: {
+    height: '100%',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
   },
   buttons: {
     run: {
     },
     debug: {
+      backgroundColor: 'orange',
     },
     next: {
+      backgroundColor: 'orange',
     },
     playOut: {
     }
@@ -74,25 +100,36 @@ const PlayOutButton = Radium(({ playOut }) => (
   </a>
 ));
 
-let TopBar = Radium(({ style, running, next, playOut, debug, run }) => {
+let TopBar = Radium(({ style, running, debugging, title, desc, next, playOut, debug, run }) => {
   if (!Array.isArray(style)) style = [style];
   let buttons = [];
   if (running) {
-    buttons.push(<NextButton key='next' next={next} />);
-    buttons.push(<PlayOutButton key='playOut' playOut={playOut} />);
+    if (debugging) {
+      buttons.push(<NextButton key='next' next={next} />);
+      buttons.push(<PlayOutButton key='playOut' playOut={playOut} />);
+    }
   } else {
     buttons.push(<DebugButton key='debug' debug={debug} />);
     buttons.push(<RunButton key='run' run={run} />);
   }
   return (
     <div style={[...style, styles.container]}>
-      {buttons}
+      <div style={[styles.titleContainer]}>
+        <h2 style={[styles.title, styles.text]}>{title}</h2>
+        {/* Desc is truseted, it comes from the world. */}
+        <p style={[styles.desc, styles.text]} dangerouslySetInnerHTML={{ __html: desc }} />
+      </div>
+      <div style={[styles.buttonContainer]}>
+        {buttons}
+      </div>
     </div>
   );
 });
 
 TopBar = connect(
-  ({ Editor: { running } }) => ({ running }),
+  ({ Editor: { running, debugging }, TopBar: { title, desc } }) => (
+    { running, title, desc, debugging }
+  ),
   dispatch => bindActionCreators({ next, playOut, debug, run }, dispatch)
 )(TopBar);
 

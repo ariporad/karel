@@ -1,6 +1,7 @@
 import { KarelError } from './KarelError';
 import { parseWorld } from './parseWorld';
-import { STOP } from '../Editor/duck';
+import { STOP, setCode } from '../Editor/duck';
+import { setTitleDesc } from '../TopBar/duck';
 
 /**
  * Actions
@@ -10,8 +11,15 @@ export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
 export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
 export const RESET = 'karel/KarelWorld/RESET';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
+export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
 
 export const reset = () => ({ type: RESET });
+export const setWorld = world => (dispatch, getState) => {
+  const { title, desc, code, height, width, karel, bombs, lasers } = parseWorld(world);
+  dispatch({ type: SET_WORLD, payload: { height, width, karel, bombs, lasers } });
+  dispatch(setCode(code));
+  dispatch(setTitleDesc(title, desc));
+};
 export const karelDied = err => dispatch => {
   dispatch({ type: KAREL_DIED, error: true, payload: err });
   dispatch({ type: STOP });
@@ -25,13 +33,24 @@ export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft
  */
 
 export const DEFAULT_WORLD = `
+Default World
+The Default World! <b>Bold Text!</b>
+---
+moveForward();
+turnLeft();
+moveForward();
+turnLeft();
+---
 . .|9 .
 123 .|.|.
 . .|.|#
 * . . .
 `;
 
-export const reducer = (state = { ...parseWorld(DEFAULT_WORLD), err: null }, action) => {
+export const reducer = (
+  state = { bombs: [], karel: { x: 0, y: 0, dir: 0 }, lasers: [[false]], height: 1, width: 1,  err: null },
+  action
+) => {
   // Decrement all the bombs
   let bombs = state.bombs;
   if ([MOVE_FORWARD, TURN_LEFT].indexOf(action.type) !== -1) {
@@ -43,6 +62,7 @@ export const reducer = (state = { ...parseWorld(DEFAULT_WORLD), err: null }, act
     });
   }
   switch (action.type) {
+    case SET_WORLD: return { ...state, ...action.payload };
     case MOVE_FORWARD: {
       let { x, y, dir } = state.karel; // eslint-disable-line prefer-const
       if (dir === 0) {        // Right
