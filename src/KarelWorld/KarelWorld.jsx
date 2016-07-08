@@ -62,7 +62,7 @@ let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err }) =>
   });
   return (
     <div style={style}>
-      <svg style={styles.svg} viewBox={`0 0 ${height * SIZE} ${width * SIZE}`}>
+      <svg style={styles.svg} viewBox={`0 0 ${width * SIZE} ${height * SIZE}`}>
         {generateBorders(width, height, SIZE)}
         {objects}
         <KarelSpy cx={c(karel.x)} cy={c(karel.y)} dir={karel.dir} size={SIZE} />
