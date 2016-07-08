@@ -30,19 +30,24 @@ const styles = {
       fontFamily: 'Ariel, sans-serif',
     },
   },
+  svg: {
+    width: '100%',
+    height: '100%',
+  }
 };
 const cpos = size => pos => pos * size + size / 2;
-let KarelWorld = Radium(({ size, karel, bombs, lasers, height, width, err }) => {
+const SIZE = 100;
+let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err }) => {
   const objects = [];
-  const c = cpos(size);
+  const c = cpos(SIZE);
   for (let y = 0; y < height; ++y) {
     for (let x = 0; x < width; ++x) {
       objects.push(<circle key={`${x}:${y}`} cx={c(x)} cy={c(y)} r={5} />);
-      if (lasers[y][x]) objects.push(<Laser key={`L${x}:${y}`} x={(x + 1) * size} y1={y * size} y2={y * size + size} />);
+      if (lasers[y][x]) objects.push(<Laser key={`L${x}:${y}`} x={(x + 1) * SIZE} y1={y * SIZE} y2={y * SIZE + SIZE} />);
     }
   }
   bombs.forEach(bomb => {
-    objects.push(<circle r={size / 5} cx={c(bomb.x)} cy={c(bomb.y)} key={`bomb @ (${bomb.x},${bomb.y})`} />);
+    objects.push(<circle r={SIZE / 5} cx={c(bomb.x)} cy={c(bomb.y)} key={`bomb @ (${bomb.x},${bomb.y})`} />);
     if (typeof bomb.limit === 'number') objects.push(
       <text
         x={c(bomb.x)}
@@ -55,12 +60,16 @@ let KarelWorld = Radium(({ size, karel, bombs, lasers, height, width, err }) => 
       >{bomb.limit}</text>
     );
   });
-  return (<svg height={height * size} width={width * size}>
-    {generateBorders(width, height, size)}
-    {objects}
-    <KarelSpy cx={c(karel.x)} cy={c(karel.y)} dir={karel.dir} size={size} />
-    {err && <ErrorOverlay err={err} width={width} height={height} size={size} />}
-  </svg>);
+  return (
+    <div style={style}>
+      <svg style={styles.svg} viewBox={`0 0 ${height * SIZE} ${width * SIZE}`}>
+        {generateBorders(width, height, SIZE)}
+        {objects}
+        <KarelSpy cx={c(karel.x)} cy={c(karel.y)} dir={karel.dir} size={SIZE} />
+        {err && <ErrorOverlay err={err} width={width} height={height} size={SIZE} />}
+      </svg>
+    </div>
+  );
 });
 
 KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err } }) => {

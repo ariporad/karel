@@ -3,7 +3,8 @@ import RedBox from 'redbox-react';
 import configureStore from './redux';
 import App from './App';
 
-const store = configureStore();
+// ReduxDevTools catches errors in the reducer, which breaks KarelErrors
+const store = configureStore(undefined, !true);
 
 let rootEl = document.getElementById('root');
 if (!rootEl) {

@@ -1,13 +1,13 @@
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import { reducer as KarelWorld } from './KarelWorld/duck';
+import { reducer as Editor } from './Editor/duck';
 
-const configureStore = initialState => {
-  const reducer = combineReducers({ KarelWorld });
+const configureStore = (initialState, devtools = false) => {
+  const reducer = combineReducers({ KarelWorld, Editor });
   return createStore(reducer, initialState, compose(
     applyMiddleware(thunk),
-    // ReduxDevTools catches errors in the reducer, which breaks KarelErrors
-    false && window.devToolsExtension ? window.devToolsExtension() : f => f
+    devtools && window.devToolsExtension ? window.devToolsExtension() : f => f
   ));
 };
 

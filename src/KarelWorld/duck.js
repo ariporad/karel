@@ -1,5 +1,6 @@
 import { KarelError } from './KarelError';
 import { parseWorld } from './parseWorld';
+import { STOP } from '../Editor/duck';
 
 /**
  * Actions
@@ -11,7 +12,10 @@ export const RESET = 'karel/KarelWorld/RESET';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 
 export const reset = () => ({ type: RESET });
-export const karelDied = err => ({ type: KAREL_DIED, error: true, payload: err });
+export const karelDied = err => dispatch => {
+  dispatch({ type: KAREL_DIED, error: true, payload: err });
+  dispatch({ type: STOP });
+}
 
 export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } })
 export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } })
