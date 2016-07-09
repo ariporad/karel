@@ -31,7 +31,10 @@ const checkForWin = (dispatch, getState) => {
 export const reset = () => ({ type: RESET });
 export const setWorld = world => (dispatch, getState) => {
   const { title, desc, code, height, width, karel, bombs, lasers, crown } = parseWorld(world);
-  dispatch({ type: SET_WORLD, payload: { height, width, karel, bombs, lasers, crown } });
+  dispatch({
+    type: SET_WORLD,
+    payload: { height, width, karel, bombs, lasers, crown, won: false, err: null }
+  });
   dispatch(setCode(code));
   dispatch(setTitleDesc(title, desc));
 };
@@ -83,7 +86,7 @@ export const reducer = (
     height: 1,
     width: 1,
     err: null,
-    won: false,
+    won: true,
   },
   action
 ) => {

@@ -2,12 +2,15 @@ import { Provider } from 'react-redux';
 import RedBox from 'redbox-react';
 import configureStore from './redux';
 import App from './App';
-import { setWorld, DEFAULT_WORLD } from './KarelWorld/duck';
+import makeApiClient from './api';
+
+const api = makeApiClient();
 
 // ReduxDevTools catches errors in the reducer, which breaks KarelErrors
-const store = configureStore(undefined, !true);
+//const store = configureStore(undefined, api, false);
+const store = configureStore(undefined, api, true);
 
-store.dispatch(setWorld(DEFAULT_WORLD));
+api.setStore(store);
 
 let rootEl = document.getElementById('root');
 if (!rootEl) {

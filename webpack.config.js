@@ -1,5 +1,6 @@
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
+const webpack = require('webpack');
+const dotenv = require('dotenv');
 
 const test = process.env.NODE_ENV === 'test' || process.env.TEST || process.env.CI;
 const dev  = process.env.NODE_ENV !== 'production' && !test;
@@ -7,11 +8,10 @@ const prod = process.env.NODE_ENV === 'production' && !test;
 
 console.log(`dev: ${dev}, test: ${test}, prod: ${prod}`);
 
-module.exports = {
+const config = module.exports = {
   devtool: dev || test ? 'sourcemap' : 'hidden-source-map',
   entry: dev || test ? [
-    'webpack-dev-server/client?http://localhost:3000',
-    'webpack/hot/only-dev-server',
+    'webpack-hot-middleware/client',
     test ? 'mocha!./test/index.js' : './src/index',
   ] : './src/index',
   output: {
@@ -20,6 +20,7 @@ module.exports = {
     publicPath: '/static/'
   },
   plugins: [
+    new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.ProvidePlugin({
       React: 'react',
       ReactDOM: 'react-dom',
@@ -40,6 +41,18 @@ module.exports = {
     {
       test: /\.json$/,
       loaders: ['json']
+    },
+    // For Auth0
+    {
+      test: /node_modules[\\\/]auth0-lock[\\\/].*\.js$/,
+      loaders: [
+        'transform-loader/cacheable?brfs',
+        'transform-loader/cacheable?packageify'
+      ],
+    },
+    {
+      test: /node_modules[\\\/]auth0-lock[\\\/].*\.ejs$/,
+      loader: 'transform-loader/cacheable?ejsify',
     }],
   },
   resolve: {
@@ -56,3 +69,27 @@ module.exports = {
 if (dev)  module.exports.plugins.unshift(new webpack.HotModuleReplacementPlugin());
 if (prod) module.exports.plugins.unshift(new webpack.optimize.UglifyJsPlugin());
 
+// Stolen from https://git.io/vKsyE
+// ENV variables
+const dotEnvVars = dotenv.config();
+const environmentEnv = dotenv.config({
+  path: path.join(path.resolve(__dirname), 'config', `${process.env.NODE_ENV}.config.js`),
+  silent: true,
+});
+const envVariables =
+    Object.assign({}, dotEnvVars, environmentEnv);
+
+const defines =
+  Object.keys(envVariables)
+  .reduce((memo, key) => {
+    const val = JSON.stringify(envVariables[key]);
+    memo[`__${key.toUpperCase()}__`] = val;
+    return memo;
+  }, {
+    __NODE_ENV__: JSON.stringify(process.env.NODE_ENV)
+  });
+
+config.plugins = [
+  new webpack.DefinePlugin(defines)
+].concat(config.plugins);
+// END ENV variables

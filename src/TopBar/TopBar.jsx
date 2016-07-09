@@ -7,7 +7,6 @@ const styles = {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    flexDirecton: 'row',
   },
   button: {
     margin: 5,
@@ -25,7 +24,9 @@ const styles = {
     flexShrink: 100,
   },
   title: {
-    margin: 0,
+    marginTop: 0,
+    marginLeft: 0,
+    marginRight: 0,
     marginBottom: 5,
     padding: 0,
   },
@@ -57,11 +58,11 @@ const styles = {
 };
 
 const RunButton = Radium(({ run }) => (
-  <a href='#' alt='Run' onClick={run} style={[styles.button, styles.buttons.run]}>
+  <div alt='Run' onClick={run} style={[styles.button, styles.buttons.run]}>
     <svg height={30} width={30}>
       <polygon points={[[2.5, 0], [2.5, 30], [30, 15]]} fill='white'/>
     </svg>
-  </a>
+  </div>
 ));
 
 // Modified From: https://commons.wikimedia.org/wiki/File:High-contrast-bug-buddy.svg
@@ -78,26 +79,26 @@ const DEBUG_ICON = `
 `;
 
 const DebugButton = Radium(({ debug }) => (
-  <a href='#' alt='debug' onClick={debug} style={[styles.button, styles.buttons.debug]}>
+  <div alt='debug' onClick={debug} style={[styles.button, styles.buttons.debug]}>
     <svg height={30} width={30} dangerouslySetInnerHTML={{__html: DEBUG_ICON}}/>
-  </a>
+  </div>
 ));
 
 let NextButton = Radium(({ next }) => (
-  <a href='#' alt='next' onClick={next} style={[styles.button, styles.buttons.next]}>
+  <div alt='next' onClick={next} style={[styles.button, styles.buttons.next]}>
     <svg height={30} width={30}>
       <polygon points={[[2.5, 0], [2.5, 30], [30, 15]]} fill='white'/>
       <rect x={26} y={0} width={4} height={30} fill='white'/>
     </svg>
-  </a>
+  </div>
 ));
 
 const PlayOutButton = Radium(({ playOut }) => (
-  <a href='#' alt='Play Out' onClick={playOut} style={[styles.button, styles.buttons.playOut]}>
+  <div alt='Play Out' onClick={playOut} style={[styles.button, styles.buttons.playOut]}>
     <svg height={30} width={30}>
       <polygon points={[[2.5, 0], [2.5, 30], [30, 15]]} fill='white'/>
     </svg>
-  </a>
+  </div>
 ));
 
 let TopBar = Radium(({ style, running, debugging, title, desc, next, playOut, debug, run }) => {

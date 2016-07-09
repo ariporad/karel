@@ -27,48 +27,63 @@ class Editor extends React.Component {
   constructor(props) {
     super();
     this.editorDiv = <div ref='editor' key='editor' style={[styles.editor]} id='ace-editor' />
+    // So we don't cause a re-render in resonse to our changes.
+    this.updating = false;
   }
 
   componentDidMount() {
     this.editor = ace.edit('ace-editor');
-    global.editor = this.editor;
-    global.Range = Range;
+    this.editor.$blockScrolling = Infinity;
     this.editor.getSession().setMode('ace/mode/javascript');
     this.editor.setTheme('ace/theme/monokai');
 
     const session = this.editor.getSession();
 
     // Don't show warnings in the gutter
-    session.on('changeAnnotation', () => session.getAnnotations().length > 0 && session.setAnnotations([]));
+    session.on('changeAnnotation', () => {
+      session.getAnnotations().length > 0 && session.setAnnotations([])
+    });
 
     // Keep props in sync
-    this.editor.setValue(this.props.code);
-    this.editor.getSession().on('change', () => this.props.setCode(this.editor.getValue()));
+    this.editor.getSession().on('change', () => {
+      if (!this.updating) {
+        this.props.setCode(this.editor.getValue())
+      }
+    });
 
-    // For some reason, it starts by hightlighting everything. Fix that.
-    const markers = session.getMarkers(false);
-    for (const id in markers) {
-      if (markers[id].clazz === 'ace_selection') session.removeMarker(id);
-    }
   }
 
-  componentDidUpdate() {
-    this.editor.setReadOnly(this.props.running);
+  shouldComponentUpdate(nextProps) {
+    this.updating = true;
+    this.editor.setReadOnly(nextProps.running);
+    this.editor.setValue(nextProps.code);
 
     const session = this.editor.getSession();
     const markers = session.getMarkers(false);
+
+    // For some reason, it starts by hightlighting everything. Fix that.
     for (const id in markers) {
-      if (markers[id].clazz === 'active-line') session.removeMarker(id);
+      if (
+        // It starts out by highlighting the code when you use set value.
+        markers[id].clazz === 'ace_selection' ||
+        // Un-highlight the old line
+        markers[id].clazz === 'active-line'
+      ) session.removeMarker(id);
     }
-    if (this.props.running && this.props.activeLine) {
-      session.addMarker(new Range(this.props.activeLine - 1, 0, this.props.activeLine, 0), 'active-line', true);
+
+    // Hightlight the active line
+    if (nextProps.running && nextProps.activeLine) {
+      session.addMarker(new Range(nextProps.activeLine - 1, 0, nextProps.activeLine, 0), 'active-line', true);
     }
+    this.updating = false;
+    // Don't update, it would break the editor
+    return false;
   }
 
   render() {
     return (
       <div style={this.props.style}>
-        {this.editorDiv}
+        <div ref='editor' style={[styles.editor]} id='ace-editor' />
         <Style rules={{ '.active-line': styles.activeLine }} />
       </div>
     );

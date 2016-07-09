@@ -16,9 +16,13 @@ const getKarelFuncs = () => ({
 });
 export const setCode = code => ({ type: SET_CODE, payload: code });
 
-const startRunning = (getState, dispatch) => {
+const startRunning = (dispatch, getState, api) => {
   dispatch(actionCreators.reset());
   const state = getState();
+
+  // Let the server know
+  api.sendAttempt(state.KarelWorld.wid, state.Editor.code);
+
   const store = configureStore(state);
   const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
   return actions;
@@ -26,8 +30,8 @@ const startRunning = (getState, dispatch) => {
 
 // I'm not really sure I like having the editor control the running of the code, but I suppose it's
 // fine. I'm not sure where else it would go.
-export const run = () => (dispatch, getState) => {
-  const actions = startRunning(getState, dispatch);
+export const run = () => (dispatch, getState, api) => {
+  const actions = startRunning(dispatch, getState, api);
 
   dispatch({ type: RUN, payload: actions });
   const interval = setInterval(() => {
@@ -37,8 +41,8 @@ export const run = () => (dispatch, getState) => {
   }, 500);
 };
 
-export const debug = () => (dispatch, getState) => {
-  const actions = startRunning(getState, dispatch);
+export const debug = () => (dispatch, getState, api) => {
+  const actions = startRunning(dispatch, getState, api);
   dispatch({ type: DEBUG, payload: actions });
   dispatch(next());
 };
