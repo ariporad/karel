@@ -1,6 +1,7 @@
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { next, playOut, debug, run } from '../Editor/duck';
+import { nextWorld } from '../apiDuck';
 
 const styles = {
   container: {
@@ -53,7 +54,13 @@ const styles = {
       backgroundColor: 'orange',
     },
     playOut: {
-    }
+    },
+    nextWorld: {
+      height: 30,
+      width: 70, // width * 2 + margin * 2
+      color: 'white',
+      backgroundColor: 'blue',
+    },
   },
 };
 
@@ -101,7 +108,31 @@ const PlayOutButton = Radium(({ playOut }) => (
   </div>
 ));
 
-let TopBar = Radium(({ style, running, debugging, title, desc, next, playOut, debug, run }) => {
+const NextWorldButton = Radium(({ nextWorld }) => (
+  <div alt='Next World' onClick={nextWorld} style={[styles.button, styles.buttons.nextWorld]}>
+    Next
+  </div>
+));
+
+let TopBar = Radium(({
+  // TopBar settings
+  title,
+  desc,
+  style,
+
+  // State
+  running,
+  debugging,
+  won,
+  hasNextWorld,
+
+  // Action Creators
+  run,
+  debug,
+  next,
+  playOut,
+  nextWorld,
+}) => {
   if (!Array.isArray(style)) style = [style];
   let buttons = [];
   if (running) {
@@ -121,6 +152,7 @@ let TopBar = Radium(({ style, running, debugging, title, desc, next, playOut, de
         <p style={[styles.desc, styles.text]} dangerouslySetInnerHTML={{ __html: desc }} />
       </div>
       <div style={[styles.buttonContainer]}>
+        {won && hasNextWorld && <NextWorldButton nextWorld={nextWorld} />}
         {buttons}
       </div>
     </div>
@@ -128,10 +160,15 @@ let TopBar = Radium(({ style, running, debugging, title, desc, next, playOut, de
 });
 
 TopBar = connect(
-  ({ Editor: { running, debugging }, TopBar: { title, desc } }) => (
-    { running, title, desc, debugging }
+  ({
+    Editor: { running, debugging },
+    TopBar: { title, desc },
+    KarelWorld: { won },
+    api: { worlds },
+  }) => (
+    { running, title, desc, debugging, won, hasNextWorld: worlds.length > 0 }
   ),
-  dispatch => bindActionCreators({ next, playOut, debug, run }, dispatch)
+  dispatch => bindActionCreators({ next, playOut, debug, run, nextWorld }, dispatch)
 )(TopBar);
 
 export default TopBar;

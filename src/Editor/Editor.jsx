@@ -26,9 +26,8 @@ class Editor extends React.Component {
 
   constructor(props) {
     super();
-    this.editorDiv = <div ref='editor' key='editor' style={[styles.editor]} id='ace-editor' />
     // So we don't cause a re-render in resonse to our changes.
-    this.updating = false;
+    this.updatingEditor = false;
   }
 
   componentDidMount() {
@@ -46,7 +45,7 @@ class Editor extends React.Component {
 
     // Keep props in sync
     this.editor.getSession().on('change', () => {
-      if (!this.updating) {
+      if (this.props.code !== this.editor.getValue()) {
         this.props.setCode(this.editor.getValue())
       }
     });
@@ -54,28 +53,25 @@ class Editor extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    this.updating = true;
+    this.updatingEditor = true;
     this.editor.setReadOnly(nextProps.running);
-    this.editor.setValue(nextProps.code);
+    if (nextProps.code.trim() !== this.editor.getValue().trim()) {
+      this.editor.setValue(nextProps.code, 1);
+    }
 
     const session = this.editor.getSession();
     const markers = session.getMarkers(false);
 
-    // For some reason, it starts by hightlighting everything. Fix that.
     for (const id in markers) {
-      if (
-        // It starts out by highlighting the code when you use set value.
-        markers[id].clazz === 'ace_selection' ||
-        // Un-highlight the old line
-        markers[id].clazz === 'active-line'
-      ) session.removeMarker(id);
+      // Unhighlight the old active line
+      if (markers[id].clazz === 'active-line') session.removeMarker(id);
     }
 
     // Hightlight the active line
     if (nextProps.running && nextProps.activeLine) {
       session.addMarker(new Range(nextProps.activeLine - 1, 0, nextProps.activeLine, 0), 'active-line', true);
     }
-    this.updating = false;
+    this.updatingEditor = false;
     // Don't update, it would break the editor
     return false;
   }

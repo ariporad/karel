@@ -3,6 +3,8 @@ import RedBox from 'redbox-react';
 import configureStore from './redux';
 import makeApiClient from './api';
 
+global.dbg = dbg;
+
 makeApiClient().then(api => {
   // ReduxDevTools catches errors in the reducer, which breaks KarelErrors
   const store = configureStore(undefined, api, false);
@@ -23,7 +25,7 @@ makeApiClient().then(api => {
     const App = require('./App').default;
     ReactDOM.render(
       <Provider store={store}>
-        <App />
+        <App api={api} />
       </Provider>,
       rootEl
     );

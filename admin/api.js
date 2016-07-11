@@ -1,6 +1,7 @@
-import { pushWorld, forceWorld } from './apiDuck';
 import IO from 'socket.io-client';
 import Auth0Lock from 'auth0-lock';
+
+const debug = dbg('karel:admin:api');
 
 export default () => {
   let store;
@@ -8,12 +9,12 @@ export default () => {
   let connected = false;
   let pendingEvents = [];
 
-  const io = IO(document.location.origin + '/client');
+  const io = IO(document.location.href, { multiplex: false });
 
   io.on('connect', () => {
-    console.log('Connected!');
+    debug('connected');
     connected = true;
-    pendingEvents.forEach(([event, data]) => io.emit(event, data));
+    pendingEvents.forEach(args => io.emit(...args));
     pendingEvents = null;
   });
 
@@ -26,24 +27,21 @@ export default () => {
   };
 
   // Give the server access to our store
-  io.on('getState', () => emit('getState', store.getState()));
+  io.on('getState', () => io.emit('getState', store.getState()));
   io.on('action', action => store.dispatch(action));
-
-  io.on('pushWorld', world => store.dispatch(pushWorld(world)));
-  io.on('forceWorld', world => store.dispatch(forceWorld(world)));
 
   /**
    * Public APIs
    */
-  const sendAttempt = (wid, code) => emit('attempt', { wid, code });
-
   const setStore = store_ => store = store_;
 
-  const publicAPI = { sendAttempt, setStore };
+  const createWorld = text => io.emit('createWorld', text);
+
+  const publicAPI = { createWorld, setStore };
 
   return new Promise((resolve, reject) => {
     io.on('authenticated', () => {
-      console.log('Authed!');
+      debug('Authenticated!');
       resolve(publicAPI);
     });
 
@@ -53,15 +51,23 @@ export default () => {
       if (hash.error) return reject(hash.error);
 
       lock.getProfile(hash.id_token, (err, profile) => {
-        if (err) return reject(new Error('Cannot get User!'));
+        if (err) return reject(err);
         userProfile = profile;
         userToken = hash.id_token;
+
+        if (!profile.admin) {
+          alert('You\'re not an admin!');
+          document.location.pathname = '';
+        }
 
         emit('authenticate', { token: userToken });
 
         io.on('unauthorized', (err, cb) => {
+          debug('Authed failed!\n%s\n%s', err.message, err.stack);
           reject(new Error('Auth Failed!'));
-          return cb();
+
+          // Send them back to Karel
+          document.location.pathname = '';
         });
       });
     } else {
@@ -69,3 +75,4 @@ export default () => {
     }
   });
 };
+

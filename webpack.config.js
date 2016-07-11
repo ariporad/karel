@@ -10,21 +10,29 @@ console.log(`dev: ${dev}, test: ${test}, prod: ${prod}`);
 
 const config = module.exports = {
   devtool: dev || test ? 'sourcemap' : 'hidden-source-map',
-  entry: dev || test ? [
-    'webpack-hot-middleware/client',
-    test ? 'mocha!./test/index.js' : './src/index',
-  ] : './src/index',
+  entry: {
+    bundle: dev || test ? [
+      'webpack-hot-middleware/client',
+      test ? 'mocha!./test/index.js' : './src/index',
+    ] : './src/index',
+    admin: dev || test ? [
+      'webpack-hot-middleware/client',
+      './admin/index',
+    ] : './admin/index',
+  },
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].js',
     publicPath: '/static/'
   },
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),
+    new webpack.optimize.CommonsChunkPlugin('common'),
     new webpack.ProvidePlugin({
       React: 'react',
       ReactDOM: 'react-dom',
       Radium: 'radium',
+      dbg: 'debug',
     }),
     new webpack.DefinePlugin({
       __DEV__: dev || test,
@@ -36,7 +44,7 @@ const config = module.exports = {
     loaders: [{
       test: /\.jsx?$/,
       loaders: ['babel'],
-      include: path.join(__dirname, 'src')
+      include: [path.join(__dirname, 'src'), path.join(__dirname, 'admin')],
     },
     {
       test: /\.json$/,

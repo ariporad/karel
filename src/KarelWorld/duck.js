@@ -11,7 +11,6 @@ export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
 export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
 export const PICKUP_CROWN = 'karel/KarelWorld/PICKUP_CROWN';
 export const DIFFUSE_BOMB = 'karel/KarelWorld/DIFFUSE_BOMB';
-export const RESET = 'karel/KarelWorld/RESET';
 export const WIN = 'karel/KarelWorld/WIN';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
@@ -20,6 +19,7 @@ const checkForWin = (dispatch, getState) => {
   const state = getState();
   if (state.KarelWorld.bombs.length === 0 && state.KarelWorld.crown === null) {
     dispatch({ type: WIN });
+    dispatch({ type: STOP });
     const err = KarelError('World Complete');
     err.earlyExit = true;
     throw err;
@@ -28,15 +28,20 @@ const checkForWin = (dispatch, getState) => {
   return false;
 };
 
-export const reset = () => ({ type: RESET });
+export const reset = () => (dispatch, getState) => {
+  return dispatch(setWorld(getState().KarelWorld.worldStr));
+}
 export const setWorld = world => (dispatch, getState) => {
+  const isNewWorld = getState().KarelWorld.worldStr.trim() !== world.trim();
   const { title, desc, code, height, width, karel, bombs, lasers, crown } = parseWorld(world);
   dispatch({
     type: SET_WORLD,
-    payload: { height, width, karel, bombs, lasers, crown, won: false, err: null }
+    payload: { height, width, karel, bombs, lasers, crown, won: false, err: null, worldStr: world }
   });
-  dispatch(setCode(code));
-  dispatch(setTitleDesc(title, desc));
+  if (isNewWorld) {
+    dispatch(setCode(code));
+    dispatch(setTitleDesc(title, desc));
+  }
 };
 export const karelDied = err => dispatch => {
   dispatch({ type: KAREL_DIED, error: true, payload: err });
@@ -62,21 +67,6 @@ export const diffuseBomb = line => ({ action(dispatch, getState) {
  * Reducer
  */
 
-export const DEFAULT_WORLD = `
-Default World
-The Default World! <b>Bold Text!</b>
----
-moveForward();
-turnLeft();
-moveForward();
-turnLeft();
----
-. .|9 .
-123 .|.|.
-. @|.|#
-* . . .
-`;
-
 export const reducer = (
   state = {
     bombs: [],
@@ -87,6 +77,7 @@ export const reducer = (
     width: 1,
     err: null,
     won: true,
+    worldStr: 'K',
   },
   action
 ) => {
@@ -142,7 +133,6 @@ export const reducer = (
       return { ...state, bombs };
     case WIN: return { ...state, won: true, running: false, debugging: false };
     case KAREL_DIED: return { ...state, err: action.payload };
-    case RESET: return { ...state, err: null, won: false, ...parseWorld(DEFAULT_WORLD) };
     default: return state;
   }
 };
