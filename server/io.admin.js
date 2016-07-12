@@ -7,8 +7,6 @@ const debug = dbg('karel:server:admin');
 export const setupSocket = (socket, io, store) => {
   socket.on('createWorld', world => {
     debug('Creating World:\n%s', world);
-    console.log('w', world);
-    console.log(createWorld.toString());
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
     store.dispatch(pushWorldAll(wid));

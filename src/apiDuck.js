@@ -3,20 +3,21 @@ import { setWorld } from './KarelWorld/duck';
 
 const debug = dbg('karel:client:api');
 
-const PUSH_WORLD = 'karel/api/PUSH_WORLD';
-const NEXT_WORLD = 'karel/api/NEXT_WORLD';
+export const PUSH_WORLD = 'karel/api/PUSH_WORLD';
+export const NEXT_WORLD = 'karel/api/NEXT_WORLD';
+export const SET_WID = 'karel/api/SET_WID';
 
 export const pushWorld = world => (dispatch, getState) => {
-  debug('pushingWorld', world);
-
+  debug('Pushing World:', world);
   const state = getState();
-  dispatch({ type: PUSH_WORLD, payload: world.text });
+  dispatch({ type: PUSH_WORLD, payload: world });
   if (state.KarelWorld.won) dispatch(nextWorld());
 }
-export const forceWorld = text => (dispatch, getState, api) => {
+export const forceWorld = world => (dispatch, getState, api) => {
+  debug('Forcing World:', world);
   const state = getState();
   api.sendAttempt(state.KarelWorld.wid, state.Editor.code);
-  return dispatch(setWorld(text));
+  return dispatch(setWorld(world));
 };
 export const nextWorld = () => (dispatch, getState) => {
   const world = getState().api.worlds[0];

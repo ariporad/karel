@@ -4,15 +4,20 @@ import { resolve } from 'path';
 import express from 'express';
 import IO from 'socket.io';
 import { readFile, writeFile } from 'fs';
+import mkdirp from 'mkdirp';
 import setupIO from './io';
 import setupAdminIO from './io.admin';
 import createStore from './redux';
 
 const debug = dbg('karel:server:index');
+
+const storagePath = './tmp/karel.json';
+mkdirp.sync('./tmp');
+
 const app = express();
 const server = createServer(app);
 const io = IO(server);
-const store = createStore();
+const store = createStore({ path: storagePath });
 
 if (process.env.NODE_ENV === 'development') {
   debug('Enabling Webpack');
@@ -25,7 +30,9 @@ if (process.env.NODE_ENV === 'development') {
     { publicPath: webpackConfig.output.publicPath, noInfo: true }
   ));
 //  app.use(require('webpack-hot-middleware')(compiler));
-};
+} else {
+  app.use('/static', express.static(resolve(__dirname, '..', dist)));
+}
 
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, '../index.html'));

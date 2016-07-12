@@ -7,13 +7,14 @@ const debug = dbg('karel:server:io');
 export const setupSocket = (socket, io, store) => {
   try {
     const user = store.dispatch(connect(socket.token, socket.decoded_token, socket.profile, socket));
-    debug('User Connected:', user.toJS());
+    const uid = user.get('id');
+    debug('User Connected:', uid);
     user.get('queue').forEach(world => socket.emit('pushWorld', world));
     socket.on('disconnect', () => {
-      debug('User Disconnected:', user.toJS());
-      store.dispatch(disconnect(user))
+      debug('User Disconnected:', uid);
+      store.dispatch(disconnect(uid))
     });
-    socket.on('attempt', ({ wid, code }) => store.dispatch(attempt(user, code, wid)));
+    socket.on('attempt', ({ wid, code }) => store.dispatch(attempt(uid, code, wid)));
   } catch (e) {
     console.error(e.message);
     console.error(e.stack);

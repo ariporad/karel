@@ -29,14 +29,14 @@ const checkForWin = (dispatch, getState) => {
 };
 
 export const reset = () => (dispatch, getState) => {
-  return dispatch(setWorld(getState().KarelWorld.worldStr));
+  return dispatch(setWorld({ text: getState().KarelWorld.worldStr, wid: getState().KarelWorld.wid }));
 }
-export const setWorld = world => (dispatch, getState) => {
-  const isNewWorld = getState().KarelWorld.worldStr.trim() !== world.trim();
-  const { title, desc, code, height, width, karel, bombs, lasers, crown } = parseWorld(world);
+export const setWorld = ({ text, wid }) => (dispatch, getState) => {
+  const isNewWorld = getState().KarelWorld.worldStr.trim() !== text.trim();
+  const { title, desc, code, ...world } = parseWorld(text);
   dispatch({
     type: SET_WORLD,
-    payload: { height, width, karel, bombs, lasers, crown, won: false, err: null, worldStr: world }
+    payload: { ...world, wid, won: false, err: null, worldStr: text },
   });
   if (isNewWorld) {
     dispatch(setCode(code));
@@ -78,6 +78,7 @@ export const reducer = (
     err: null,
     won: true,
     worldStr: 'K',
+    wid: null,
   },
   action
 ) => {
