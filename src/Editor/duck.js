@@ -1,6 +1,7 @@
-import configureStore from '../redux';
+import { createStore, combineReducers } from 'redux';
 import runKarel from '../KarelWorld/runKarel';
-import * as actionCreators from '../KarelWorld/duck';
+import * as KWActionCreators from '../KarelWorld/duck';
+import { karel as karelCommands } from '../KarelWorld/karelCommands';
 
 export const SET_CODE = 'karel/Editor/SET_CODE';
 export const RUN = 'karel/Editor/RUN';
@@ -8,23 +9,22 @@ export const DEBUG = 'karel/Editor/DEBUG';
 export const NEXT = 'karel/Editor/NEXT';
 export const STOP = 'karel/Editor/STOP';
 
-const getKarelFuncs = () => ({
-  moveForward: actionCreators.moveForward,
-  turnLeft: actionCreators.turnLeft,
-  pickupCrown: actionCreators.pickupCrown,
-  diffuseBomb: actionCreators.diffuseBomb,
-});
 export const setCode = code => ({ type: SET_CODE, payload: code });
 
 const startRunning = (dispatch, getState, api) => {
-  dispatch(actionCreators.reset());
+  dispatch(KWActionCreators.reset());
   const state = getState();
 
   // Let the server know
   api.sendAttempt(state.KarelWorld.wid, state.Editor.code);
 
-  const store = configureStore(state);
-  const actions = runKarel(state.Editor.code, getKarelFuncs(), store);
+  // We're creating the store ourself because we only want the KW reducer, and we don't want any
+  // middleware.
+  const store = createStore(
+    combineReducers({ KarelWorld: KWActionCreators.reducer }),
+    { KarelWorld: state.KarelWorld }
+  );
+  const actions = runKarel(state.Editor.code, karelCommands, store);
   return actions;
 };
 

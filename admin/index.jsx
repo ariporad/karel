@@ -2,6 +2,7 @@ import { Provider } from 'react-redux';
 import RedBox from 'redbox-react';
 import configureStore from './redux';
 import makeApiClient from './api';
+import runKarel from './runKarel';
 
 global.dbg = dbg;
 

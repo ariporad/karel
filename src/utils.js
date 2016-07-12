@@ -1,0 +1,2 @@
+export { compose } from 'redux';
+

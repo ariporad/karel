@@ -14,19 +14,7 @@ export const DIFFUSE_BOMB = 'karel/KarelWorld/DIFFUSE_BOMB';
 export const WIN = 'karel/KarelWorld/WIN';
 export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
 export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
-
-const checkForWin = (dispatch, getState) => {
-  const state = getState();
-  if (state.KarelWorld.bombs.length === 0 && state.KarelWorld.crown === null) {
-    dispatch({ type: WIN });
-    dispatch({ type: STOP });
-    const err = KarelError('World Complete');
-    err.earlyExit = true;
-    throw err;
-    return true;
-  }
-  return false;
-};
+export { STOP } from '../Editor/duck'; // Cheat a bit
 
 export const reset = () => (dispatch, getState) => {
   return dispatch(setWorld({ text: getState().KarelWorld.worldStr, wid: getState().KarelWorld.wid }));
@@ -47,21 +35,6 @@ export const karelDied = err => dispatch => {
   dispatch({ type: KAREL_DIED, error: true, payload: err });
   dispatch({ type: STOP });
 }
-
-export const moveForward = line => ({ type: MOVE_FORWARD, meta: { line, cmd: 'moveForward();' } });
-export const turnLeft = line => ({ type: TURN_LEFT, meta: { line, cmd: 'turnLeft();' } });
-export const pickupCrown = line => ({ action(dispatch, getState) {
-  const action = { type: PICKUP_CROWN, meta: { line, cmd: 'pickupCrown();' } };
-  dispatch(action);
-  checkForWin(dispatch, getState);
-  return action;
-} });
-export const diffuseBomb = line => ({ action(dispatch, getState) {
-  const action = { type: DIFFUSE_BOMB, meta: { line, cmd: 'diffuseBomb();' } };
-  dispatch(action);
-  checkForWin(dispatch, getState);
-  return action;
-} });
 
 /**
  * Reducer

@@ -1,5 +1,6 @@
 import parseStack from 'parse-stack';
 import { generate as randomString } from 'randomstring';
+import { compose } from '../utils';
 import configureStore from '../redux';
 import KarelError from './KarelError';
 import { karelDied } from './duck';
@@ -21,30 +22,20 @@ const prepFunctions = (store, getLineOffset, functions) => {
   const names = [];
   const values = [];
   const hasProp = {}.hasOwnProperty;
+  const getState = store.getState;
+  const getLine = () => getLineNum(getLineOffset(), undefined, 3);
 
-  const wrapFunction = f => (...args) => {
-    const ret = f(getLineNum(getLineOffset()), ...args);
-    let retVal, action;
-    if (hasProp.call(ret, 'ret') || hasProp.call(ret, 'action')) {
-      retVal = ret.ret;
-      action = ret.action;
-    } else {
-      action = ret;
-      retVal = undefined;
-    }
-    if (action && (typeof action === 'function' || hasProp.call(action, 'type'))) {
-      // We dispatch all of the actions (to a copy of the store) so that we can support conditionals
-      // (we have to keep track of the world state) and to stop execution if an KarelError is thrown
-      actions.push(action);
-      store.dispatch(action);
-    }
-    return retVal;
+  const dispatch = action => {
+    actions.push(action);
+    store.dispatch(action);
   };
+
+  const wrapFunction = f => (...args) => f(getLine(), ...args);
 
   for (const key in functions) {
     if (!hasProp.call(functions, key)) continue;
     names.push(key);
-    values.push(wrapFunction(functions[key]));
+    values.push(wrapFunction(functions[key](dispatch, getState)));
   }
 
   return { names, values, actions };
@@ -57,13 +48,13 @@ const prepFunctions = (store, getLineOffset, functions) => {
  * @param functions<String: Function>: A maping of functions to expose to the code. The key is the
  *                                     exposed name, the value is a redux action-creator which
  *                                     creates the relevant actions.
- * @param store: a *COPY* of the store to execute the code against *THIS MUST NOT BE THE REAL STORE*
+ * @param store: a *COPY* of the store to execute the code against *THIS SHOULD NOT BE THE REAL STORE*
  */
 const runKarel = (code, functions, store) => {
   const __karel__ = generateSecretVarName();
   let lineOffset;
 
-  code = `${__karel__}.initLineNums();\n${code}`;
+  code = `"use strict";\n${__karel__}.initLineNums();\n${code}`;
 
   const karelInternals = {
     initLineNums() {
@@ -71,13 +62,14 @@ const runKarel = (code, functions, store) => {
     },
   };
 
-  // We pass lineOffset as a closure because we don't know what it is yet, and we can't do inout.
+  // We pass lineOffset as a thunk because we don't know what it is yet, and we can't do inout.
   const { names, values, actions } = prepFunctions(store, () => lineOffset, functions);
 
   try {
     new Function(__karel__, ...names, code)(karelInternals, ...values);
   } catch (e) {
     if (e.earlyExit) return actions;
+    console.log(e.message);
     console.log(e.stack);
     if (!e.karel) {
       // (At least in Chrome), syntax errors in new Function don't report where or what they are,
@@ -85,7 +77,8 @@ const runKarel = (code, functions, store) => {
       e = KarelError(e.message, { line: null }, e);
     }
     actions.pop(); // Get rid of the failed command.
-    actions.push(karelDied(e));
+    // This is cheating a bit so we don't return actions with a thunk in it.
+    karelDied(e)(::actions.push);
   }
   return actions;
 };
