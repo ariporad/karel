@@ -39,7 +39,7 @@ const styles = {
 };
 const cpos = size => pos => pos * size + size / 2;
 const SIZE = 100;
-let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crown, won }) => {
+export const _KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crown, won }) => {
   const objects = [];
   const c = cpos(SIZE);
   for (let y = 0; y < height; ++y) {
@@ -89,9 +89,9 @@ let KarelWorld = Radium(({ style, karel, bombs, lasers, height, width, err, crow
   );
 });
 
-KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err, crown, won } }) => {
+const KarelWorld = connect(({ KarelWorld: { karel, bombs, lasers, height, width, err, crown, won } }) => {
   return { karel, bombs, lasers, height, width, err, crown, won };
-})(KarelWorld);
+})(_KarelWorld);
 
 export default KarelWorld;
 
