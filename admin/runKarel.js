@@ -5,7 +5,7 @@ import { karel } from '../src/KarelWorld/karelCommands';
 
 const runCode = (world, code) => {
   const store = configureStore(undefined, undefined, false);
-  store.dispatch(setWorld(world.toJS()));
+  store.dispatch(setWorld(world));
   const actions = runKarel(code, karel, store);
   const state = store.getState().KarelWorld;
   const won = state.won;

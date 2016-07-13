@@ -1,21 +1,24 @@
-import { _KarelWorld as KarelWorld } from '../src/KarelWorld/KarelWorld';
+import { _KarelWorld } from '../src/KarelWorld/KarelWorld';
 import runKarel from './runKarel';
 
 // FIXME: MEMOIZE, CACHE, SHOULD_COMPONENT_UPDATE
 
 const KarelWorld = ({ code, world, style }) => {
-  const { final: { karel, bombs, height, width, err, crown, won } } = runKarel(code, world);
+  const { final: { karel, bombs, lasers, height, width, err, crown, won } } = runKarel(world, code);
   return (
-    <KarelWorld
-      karel={karel}
-      bombs={bombs}
-      height={height}
-      width={width}
+    <_KarelWorld
       err={err}
-      crown={crown}
       won={won}
       style={style}
+      karel={karel}
+      bombs={bombs}
+      crown={crown}
+      width={width}
+      height={height}
+      lasers={lasers}
     />
   );
 };
+
+export default KarelWorld;
 

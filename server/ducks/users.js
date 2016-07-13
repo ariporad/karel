@@ -89,7 +89,7 @@ export default (state = new Immutable.Map(), action) => {
     case ATTEMPT:
       let { user, wid, code } = action.payload;
       user = user.updateIn(['attempts', wid], (attempts = new Immutable.List()) => {
-        return attempts.push({ date: Date.now(), code });
+        return attempts.push(new Immutable.Map({ date: Date.now(), code }));
       });
       return state.set(user.get('id'), user);
       return ret;

@@ -1,9 +1,10 @@
 import { Provider } from 'react-redux';
+import { Router, Route, IndexRoute, Link, hashHistory } from 'react-router';
 import RedBox from 'redbox-react';
 import configureStore from './redux';
 import makeApiClient from './api';
-import runKarel from './runKarel';
 
+// dbg is defined with webpack.DefinePlugin, which doesn't work in the console
 global.dbg = dbg;
 
 makeApiClient().then(api => {
@@ -23,10 +24,10 @@ makeApiClient().then(api => {
 
   // DIY HMR: https://github.com/reactjs/redux/pull/1455
   let render = () => {
-    const App = require('./App').default;
+    const makeRoutes = require('./routes').default;
     ReactDOM.render(
       <Provider store={store}>
-        <App api={api} />
+        {makeRoutes(api)}
       </Provider>,
       rootEl
     );
@@ -44,7 +45,7 @@ makeApiClient().then(api => {
         renderError(err);
       }
     };
-    module.hot.accept('./App.jsx', render);
+    module.hot.accept('./routes.jsx', render);
   }
 
   render();
@@ -53,6 +54,8 @@ makeApiClient().then(api => {
   console.error(err.message);
   console.error(err.stack);
   alert('Fatal Error!\n' + err.message);
-  document.location.reload(true);
+  localStorage.clear();
+  sessionStorage.clear();
+  document.location.pathname = '/admin'; // Clear the hash and query string
 });
 

@@ -34,13 +34,18 @@ if (process.env.NODE_ENV === 'development') {
   app.use('/static', express.static(resolve(__dirname, '..', dist)));
 }
 
-app.get('/', (req, res) => {
-  res.sendFile(resolve(__dirname, '../index.html'));
-});
-
-app.get('/admin', (req, res) => {
+const admin = (req, res) => {
   res.sendFile(resolve(__dirname, '../admin.html'));
-});
+};
+const client = (req, res) => {
+  res.sendFile(resolve(__dirname, '../index.html'));
+};
+
+app.get('/admin', admin);
+app.get('/admin*', admin);
+app.get('/', client);
+app.get('/*', client);
+
 
 setupIO(io, store);
 setupAdminIO(io, store);
