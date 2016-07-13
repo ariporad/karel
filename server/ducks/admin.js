@@ -44,7 +44,7 @@ export const pushWorld = (wid, uid) => (dispatch, getState) => {
   }
 };
 export const forceWorld = (wid, uid) => (dispatch, getState) => {
-  debug('Forcing World: %s to User: %s', wid, user.get('id'));
+  debug('Forcing World: %s to User: %s', wid, uid);
   const state = getState();
   let { user, world } = dispatch(get(wid, uid));
   user = user.set('queue', new Immutable.List([world]));
@@ -64,7 +64,7 @@ export const forceWorldAll = wid => (dispatch, getState) => {
   debug('Forcing world: %s to everyone', wid);
   const state = getState();
   // Immutable stops the forEach if it returns false, which we don't want.
-  state.users.forEach(user => dispatch(forceWorld(wid, user)) || true);
+  state.users.forEach(user => dispatch(forceWorld(wid, user.get('id'))) || true);
 };
 
 

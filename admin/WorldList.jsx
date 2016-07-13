@@ -24,7 +24,7 @@ const styles = {
   },
 }
 
-export const _WorldList = withRouter(Radium(({ worlds, router }) => {
+export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll }) => {
   const trs = worlds.map((world, i) => (
     <tr key={i}>
       <td style={styles.td.id}>{world.wid}</td>
@@ -35,8 +35,13 @@ export const _WorldList = withRouter(Radium(({ worlds, router }) => {
       <td style={styles.td.actions}>
         <ButtonToolbar className='pull-right'>
           <ButtonGroup>
-            <Button bsStyle="warning">Push All</Button>
-            <Button bsStyle="danger">Force All</Button>
+            <Button bsStyle="warning" onClick={() => pushAll(world.wid)}>Push All</Button>
+            <Button
+              bsStyle="danger"
+              onClick={() => {
+                confirm('You\'d like to force this world to everyone?') && forceAll(world.wid)
+              }}
+            >Force All</Button>
           </ButtonGroup>
           <ButtonGroup>
             <Button bsStyle="link" onClick={() => router.push(`/admin/worlds/${world.wid}`)}>
@@ -82,7 +87,11 @@ export default class WorldList extends React.Component {
 
   render() {
     if (this.loading) return <h1>Loading...</h1>;
-    return <_WorldList worlds={this.state.worlds} />;
+    return <_WorldList
+      worlds={this.state.worlds}
+      pushAll={this.props.api.pushAll}
+      forceAll={this.props.api.forceAll}
+    />;
   }
 };
 

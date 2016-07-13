@@ -1,6 +1,6 @@
 import socketioJwt from 'socketio-jwt';
 import { getProfile } from './utils';
-import { createWorld, pushWorldAll } from './ducks/admin';
+import { createWorld, pushWorld, forceWorld, pushWorldAll, forceWorldAll } from './ducks/admin';
 
 const debug = dbg('karel:server:admin');
 
@@ -10,6 +10,25 @@ export const setupSocket = (socket, io, store) => {
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
     store.dispatch(pushWorldAll(wid));
+  });
+
+  socket.on('push', ({ wid, uid }, fn) => {
+    store.dispatch(pushWorld(wid, uid))
+    fn();
+  });
+  socket.on('force', ({ wid, uid }, fn) => {
+    store.dispatch(forceWorld(wid, uid))
+    fn();
+  });
+
+  socket.on('pushAll', (wid, fn) => {
+    store.dispatch(pushWorldAll(wid));
+    fn();
+  });
+
+  socket.on('forceAll', (wid, fn) => {
+    store.dispatch(forceWorldAll(wid));
+    fn();
   });
 
   socket.on('listWorlds', (null_, fn) => {

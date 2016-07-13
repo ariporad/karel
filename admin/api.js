@@ -37,13 +37,30 @@ export default () => {
 
   const createWorld = text => io.emit('createWorld', text);
 
+  const push = (wid, uid) => new Promise(done => io.emit('push', { wid, uid }, done));
+  const force = (wid, uid) => new Promise(done => io.emit('force', { wid, uid }, done));
+
+  const pushAll = wid => new Promise(done => io.emit('pushAll', wid, done));
+  const forceAll = wid => new Promise(done => io.emit('forceAll', wid, done));
+
   const listWorlds = () => new Promise(done => io.emit('listWorlds', null, done));
   const listUsers = () => new Promise(done => io.emit('listUsers', null, done));
 
   const worldInfo = wid => new Promise(done => io.emit('worldInfo', wid, done));
   const userInfo = uid => new Promise(done => io.emit('userInfo', uid, done));
 
-  const publicAPI = { createWorld, setStore, listWorlds, listUsers, worldInfo, userInfo };
+  const publicAPI = {
+    createWorld,
+    setStore,
+    listWorlds,
+    listUsers,
+    worldInfo,
+    userInfo,
+    push,
+    force,
+    pushAll,
+    forceAll,
+  };
 
   return new Promise((resolve, reject) => {
     io.on('authenticated', () => {

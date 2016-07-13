@@ -87,7 +87,7 @@ const styles = {
   },
 };
 
-export const _WorldView = Radium(({ world: { wid, text }, attempts }) => {
+export const _WorldView = Radium(({ world: { wid, text }, attempts, pushAll, forceAll }) => {
   const world = parseWorld(text);
   return (
     <div style={styles.containers.self}>
@@ -103,8 +103,10 @@ export const _WorldView = Radium(({ world: { wid, text }, attempts }) => {
               <Button bsStyle="danger">Force</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button bsStyle="warning">Push All</Button>
-              <Button bsStyle="danger">Force All</Button>
+              <Button bsStyle="warning" onClick={() => pushAll(wid)}>Push All</Button>
+              <Button bsStyle="danger" onClick={() => {
+                confirm('Force world to everyone?') && forceAll(wid);
+              }}>Force All</Button>
             </ButtonGroup>
             <ButtonGroup>
               <Button>Edit World</Button>
@@ -159,7 +161,12 @@ export default class WorldView extends React.Component  {
   render() {
     if (this.state.loading) return <h1>Loading...</h1>;
     if (this.state.error) return <h1><code>{this.state.error.toString()}</code></h1>;
-    return <_WorldView world={this.state.world} attempts={this.state.attempts} />
+    return <_WorldView
+      world={this.state.world}
+      attempts={this.state.attempts}
+      pushAll={this.props.api.pushAll}
+      forceAll={this.props.api.forceAll}
+    />
   }
 }
 
