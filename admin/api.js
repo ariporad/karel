@@ -35,7 +35,8 @@ export default () => {
    */
   const setStore = store_ => store = store_;
 
-  const createWorld = text => io.emit('createWorld', text);
+  const createWorld = text => new Promise(done => io.emit('createWorld', text, done));
+  const deleteWorld = wid  => new Promise(done => io.emit('deleteWorld', wid, done));
 
   const push = (wid, uid) => new Promise(done => io.emit('push', { wid, uid }, done));
   const force = (wid, uid) => new Promise(done => io.emit('force', { wid, uid }, done));
@@ -51,6 +52,7 @@ export default () => {
 
   const publicAPI = {
     createWorld,
+    deleteWorld,
     setStore,
     listWorlds,
     listUsers,

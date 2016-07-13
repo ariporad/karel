@@ -1,11 +1,11 @@
 import { ButtonGroup, ButtonToolbar, Button, Table } from 'react-bootstrap';
+import { withRouter } from 'react-router';
 import { parseWorld } from '../src/KarelWorld/parseWorld';
 import { formatTimestamp } from './utils';
 import KarelWorld from './KarelWorld';
 
 const CONTAINER_HEIGHT = 90 /* vh */;
 const TOP_HALF_HEIGHT = 40 /* % */ / 100;
-
 const BOTTOM_HALF_HEIGHT = 1 - TOP_HALF_HEIGHT;
 
 const styles = {
@@ -87,7 +87,7 @@ const styles = {
   },
 };
 
-export const _WorldView = Radium(({ world: { wid, text }, attempts, pushAll, forceAll }) => {
+export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, pushAll, forceAll, deleteWorld, router }) => {
   const world = parseWorld(text);
   return (
     <div style={styles.containers.self}>
@@ -112,7 +112,11 @@ export const _WorldView = Radium(({ world: { wid, text }, attempts, pushAll, for
               <Button>Edit World</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button bsStyle="danger">Delete World</Button>
+              <Button bsStyle="danger" onClick={() => {
+                if (!confirm('Delete World?')) return;
+                deleteWorld(wid);
+                router.push('/admin/worlds');
+              }}>Delete World</Button>
             </ButtonGroup>
           </ButtonToolbar>
           <KarelWorld style={styles.KarelWorld} world={{ text, wid }} code='' />
@@ -147,7 +151,7 @@ export const _WorldView = Radium(({ world: { wid, text }, attempts, pushAll, for
       <Radium.Style rules={{ 'html, body, #root': { width: '100%', height: '100%' } }} />
     </div>
   );
-});
+}));
 
 export default class WorldView extends React.Component  {
   state = { world: null, attempts: null, loading: true, error: null };
@@ -166,6 +170,7 @@ export default class WorldView extends React.Component  {
       attempts={this.state.attempts}
       pushAll={this.props.api.pushAll}
       forceAll={this.props.api.forceAll}
+      deleteWorld={this.props.api.deleteWorld}
     />
   }
 }

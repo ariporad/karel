@@ -1,15 +1,22 @@
 import socketioJwt from 'socketio-jwt';
 import { getProfile } from './utils';
-import { createWorld, pushWorld, forceWorld, pushWorldAll, forceWorldAll } from './ducks/admin';
+import { createWorld, pushWorld, forceWorld, pushWorldAll, forceWorldAll, deleteWorld } from './ducks/admin';
 
 const debug = dbg('karel:server:admin');
 
 export const setupSocket = (socket, io, store) => {
-  socket.on('createWorld', world => {
+  socket.on('createWorld', (world, fn) => {
     debug('Creating World:\n%s', world);
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
     store.dispatch(pushWorldAll(wid));
+    fn(wid);
+  });
+
+  socket.on('deleteWorld', (wid, fn) => {
+    debug('Deleting World:', wid);
+    store.dispatch(deleteWorld(wid));
+    fn();
   });
 
   socket.on('push', ({ wid, uid }, fn) => {

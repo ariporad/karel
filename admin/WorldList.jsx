@@ -12,7 +12,7 @@ const styles = {
   td: {
     actions: {
       whiteSpace: 'nowrap',
-      width: 235,
+      //      width: 360,
     },
     title: {
     },
@@ -24,7 +24,7 @@ const styles = {
   },
 }
 
-export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll }) => {
+export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll, deleteWorld }) => {
   const trs = worlds.map((world, i) => (
     <tr key={i}>
       <td style={styles.td.id}>{world.wid}</td>
@@ -44,6 +44,14 @@ export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll
             >Force All</Button>
           </ButtonGroup>
           <ButtonGroup>
+            <Button bsStyle="primary">Edit</Button>
+            <Button bsStyle="danger" onClick={() => {
+              if (!confirm('Delete World?')) return;
+              deleteWorld(world.wid);
+              document.location.reload();
+            }}>Delete</Button>
+          </ButtonGroup>
+          <ButtonGroup>
             <Button bsStyle="link" onClick={() => router.push(`/admin/worlds/${world.wid}`)}>
               View
             </Button>
@@ -58,7 +66,10 @@ export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll
       <div style={{ display: 'flex', marginBottom: 20, width: '100%' }}>
         <h2 style={{ margin: 0 }}>Worlds</h2>
         <div style={{ marginLeft: 'auto' }}>
-          <Button bsStyle="primary">Create World</Button>
+          <Button
+            bsStyle="primary"
+            onClick={() => router.push('/admin/worlds/create')}
+          >Create World</Button>
         </div>
       </div>
       <Table style={styles.table} striped>
@@ -91,6 +102,7 @@ export default class WorldList extends React.Component {
       worlds={this.state.worlds}
       pushAll={this.props.api.pushAll}
       forceAll={this.props.api.forceAll}
+      deleteWorld={this.props.api.deleteWorld}
     />;
   }
 };

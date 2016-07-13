@@ -10,56 +10,12 @@ const styles = {
   },
 };
 
-const DEFAULT_TEMPLATE = `
-Title
-Description (HTML is <b>OK</b> too!)
----
-// Blah Blah Blah
-defaultCode();
----
-. . . .
-. K .|.
-. 9 .|16
-. . .|@
-
-`.trim();
-
-/*
-class App extends React.Component {
-  constructor () {
-    super();
-    this.state = { value: DEFAULT_TEMPLATE };
-  }
-
-  handleEditorChange(e) {
-    this.setState({ value: e.target.value });
-  }
-
-  submitState(e) {
-    e.preventDefault();
-    debug('Submitting world:\n%s', this.state.value);
-    this.props.api.createWorld(this.state.value);
-  }
-
-  render() {
-    return (
-      <div>
-        <textarea
-          style={[styles.editor]}
-          value={this.state.value}
-          ref='editor'
-          onChange={::this.handleEditorChange}
-        />
-        <br />
-        <input type='button' value='Create World' onClick={::this.submitState} />
-      </div>
-    );
-  }
-}
-*/
-
 const App = ({ children, location, router }) => {
-  const navs = [['/admin/worlds', 'Worlds'], ['/admin/users', 'Users']].map(([path, title]) => (
+  const navs = [
+    ['/admin/worlds', 'Worlds'],
+    ['/admin/users', 'Users'],
+    ['/admin/worlds/create', 'Create World'],
+  ].map(([path, title]) => (
     <NavItem eventKey={path} key={path} onClick={() => router.push(path)}>{title}</NavItem>
   ));
   return (
