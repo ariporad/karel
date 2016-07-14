@@ -1,9 +1,11 @@
 import Immutable from 'immutable';
+import { PUSH, DELETE_ATTEMPTS_FOR_WORLD } from './users';
 
 const debug = dbg('karel:server:ducks:admin');
 
 const CREATE_WORLD = 'karel-server/admin/CREATE_WORLD';
 const DELETE_WORLD = 'karel-server/admin/DELETE_WORLD';
+const UPDATE_WORLD = 'karel-server/admin/UPDATE_WORLD';
 
 // In a way I feel this might be going to far down the pseudo-action-creators path.
 export const get = (wid, uid) => (dispatch, getState) => {
@@ -32,13 +34,20 @@ export const createWorld = world => (dispatch, getState) => {
   return wid;
 };
 
-export const deleteWorld = wid => ({ type: DELETE_WORLD, payload: wid });
+export const editWorld = (wid, text) => ({ type: UPDATE_WORLD, payload: { wid, text } });
+
+export const deleteWorld = wid => (dispatch, getState) => {
+  dispatch({ type: DELETE_WORLD, payload: wid });
+  dispatch({ type: DELETE_ATTEMPTS_FOR_WORLD, payload: wid });
+}
 
 export const pushWorld = (wid, uid) => (dispatch, getState) => {
   debug('Pushing World: %s to User: %s', wid, uid);
   const state = getState();
   let { user, world } = dispatch(get(wid, uid));
-  user = user.update('queue', queue => queue.push(world));
+  const alreadyPushed = user.get('queue').reduce((already, world) => already || world.wid === wid);
+  if (!alreadyPushed) user = user.update('queue', queue => queue.push(world));
+  dispatch({ type: PUSH, payload: user });
   if (user.get('connected') && user.get('socket')) {
     user.get('socket').emit('pushWorld', world.toJS());
   }
@@ -48,6 +57,7 @@ export const forceWorld = (wid, uid) => (dispatch, getState) => {
   const state = getState();
   let { user, world } = dispatch(get(wid, uid));
   user = user.set('queue', new Immutable.List([world]));
+  dispatch({ type: PUSH, payload: user });
   if (user.get('connected') && user.get('socket')) {
     user.get('socket').emit('forceWorld', world.toJS());
   }
@@ -75,6 +85,7 @@ export default (state = Immutable.fromJS({ next_wid: 1, worlds: {} }), action) =
       newState = newState.set('next_wid', newState.get('next_wid') + 1);
       return newState;
     case DELETE_WORLD: return state.deleteIn(['worlds', action.payload]);
+    case UPDATE_WORLD: return state.setIn(['worlds', action.payload.wid, 'text'], action.payload.text);
     default: return state;
   }
 };

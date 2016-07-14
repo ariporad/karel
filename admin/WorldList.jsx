@@ -44,7 +44,10 @@ export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll
             >Force All</Button>
           </ButtonGroup>
           <ButtonGroup>
-            <Button bsStyle="primary">Edit</Button>
+            <Button
+              bsStyle="primary"
+              onClick={() => router.push(`/admin/worlds/${world.wid}/edit`)}
+            >Edit</Button>
             <Button bsStyle="danger" onClick={() => {
               if (!confirm('Delete World?')) return;
               deleteWorld(world.wid);

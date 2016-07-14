@@ -89,6 +89,9 @@ const styles = {
 
 export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, pushAll, forceAll, deleteWorld, router }) => {
   const world = parseWorld(text);
+  const makeAttemptViewHandler = (uid, num) => () => {
+    router.push(`/admin/users/${uid}/attempts/${wid}/${num}`);
+  };
   return (
     <div style={styles.containers.self}>
       <div style={styles.containers.topHalf}>
@@ -109,7 +112,7 @@ export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, p
               }}>Force All</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button>Edit World</Button>
+              <Button onClick={() => router.push(`/admin/worlds/${wid}/edit`)}>Edit World</Button>
             </ButtonGroup>
             <ButtonGroup>
               <Button bsStyle="danger" onClick={() => {
@@ -134,14 +137,19 @@ export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, p
               </tr>
             </thead>
             <tbody>
-              {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map(attempt => (
+              {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map((attempt, num) => (
                 <tr>
                   <td>
                     <img style={styles.attempts.avatar} src={attempt.user.picture} />
                     {attempt.user.name}
                   </td>
                   <td>{formatTimestamp(attempt.date)}</td>
-                  <td><Button bsStyle="link">View</Button></td>
+                  <td>
+                    <Button
+                      bsStyle="link"
+                      onClick={makeAttemptViewHandler(attempt.user.user_id, num)}
+                    >View</Button>
+                  </td>
                 </tr>
               )) : <tr><td style={{ textAlign: 'center' }} colSpan={3}>No Attempts</td></tr>}
             </tbody>

@@ -15,9 +15,6 @@ const startRunning = (dispatch, getState, api) => {
   dispatch(KWActionCreators.reset());
   const state = getState();
 
-  // Let the server know
-  api.sendAttempt(state.KarelWorld.wid, state.Editor.code);
-
   // We're creating the store ourself because we only want the KW reducer, and we don't want any
   // middleware.
   const store = createStore(
@@ -25,6 +22,10 @@ const startRunning = (dispatch, getState, api) => {
     { KarelWorld: state.KarelWorld }
   );
   const actions = runKarel(state.Editor.code, karelCommands, store);
+
+  // Let the server know
+  api.sendAttempt(state.KarelWorld.wid, state.Editor.code, store.getState().KarelWorld.won);
+
   return actions;
 };
 
@@ -36,8 +37,8 @@ export const run = () => (dispatch, getState, api) => {
   dispatch({ type: RUN, payload: actions });
   const dispatchNext = () => {
     console.log('dispatching(run)');
-    dispatch(next());
-    if (getState().Editor.actions.length !== 0) setTimeout(dispatchNext, 500);
+    const moreActions = dispatch(next());
+    if (moreActions) setTimeout(dispatchNext, 500);
   };
   setTimeout(dispatchNext, 500);
 };

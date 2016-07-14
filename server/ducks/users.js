@@ -1,26 +1,14 @@
 import Immutable from 'immutable';
 import { get } from './admin';
 
-const CONNECT = 'karel-server/users/CONNECT';
-const DISCONNECT = 'karel-server/users/DISCONNECT';
-const ATTEMPT = 'karel-server/users/ATTEMPT';
+export const CONNECT = 'karel-server/users/CONNECT';
+export const DISCONNECT = 'karel-server/users/DISCONNECT';
+export const ATTEMPT = 'karel-server/users/ATTEMPT';
+// For when a world is deleted
+export const DELETE_ATTEMPTS_FOR_WORLD = 'karel-server/users/DELETE_ATTEMPTS_FOR_WORLD';
+export const PUSH = 'karel-server/users/PUSH';
 
 const debug = dbg('karel:server:ducks:user');
-/*const DEFAULT_WORLD = `
-Default World
-The Default World! <b>Bold Text!</b>
----
-moveForward();
-turnLeft();
-moveForward();
-turnLeft();
----
-. .|9 .
-123 .|.|.
-. @|.|#
-K . . .
-`;
-*/
 
 const DEFAULT_WORLD = `
 Default World (Min)
@@ -51,7 +39,7 @@ export const connect = (token, decoded, profile, socket = null) => (dispatch, ge
       admin: !!profile.admin,
       connected: true,
       locked: false,
-      queue: [Immutable.fromJS({ wid: '0', text: DEFAULT_WORLD })],
+      queue: [],
       socket,
       token,
       decoded,
@@ -67,9 +55,9 @@ export const disconnect = uid => (dispatch, getState) => {
   dispatch({ type: DISCONNECT, payload: user });
 };
 
-export const attempt = (uid, code, wid) => (dispatch, getState) => {
+export const attempt = (uid, code, wid, won) => (dispatch, getState) => {
   const { user } = dispatch(get(null, uid));
-  dispatch({ type: ATTEMPT, payload: { user, code, wid } });
+  dispatch({ type: ATTEMPT, payload: { user, code, wid, won } });
 };
 
 export default (state = new Immutable.Map(), action) => {
@@ -86,13 +74,24 @@ export default (state = new Immutable.Map(), action) => {
       user = user.set('socket', null);
       return state.set(user.get('id'), user);
     }
-    case ATTEMPT:
-      let { user, wid, code } = action.payload;
+    case ATTEMPT: {
+      let { user, wid, code, won } = action.payload;
       user = user.updateIn(['attempts', wid], (attempts = new Immutable.List()) => {
         return attempts.push(new Immutable.Map({ date: Date.now(), code }));
       });
+      if (won) user = user.update('queue', queue => queue.unshift());
       return state.set(user.get('id'), user);
-      return ret;
+    }
+    case DELETE_ATTEMPTS_FOR_WORLD: {
+      const wid = action.payload;
+      return state.map(user => {
+        user = user.update('attempts', attempts => attempts.delete(wid))
+        user = user.update('queue', queue => queue.filter(x => x.wid !== wid));
+        return user;
+      });
+    }
+    case PUSH:
+      return state.set(action.payload.get('id'), action.payload);
     default: return state;
   }
 };

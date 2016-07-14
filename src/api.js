@@ -1,3 +1,4 @@
+import { stringify, parse } from 'circular-json';
 import { pushWorld, forceWorld } from './apiDuck';
 import IO from 'socket.io-client';
 import Auth0Lock from 'auth0-lock';
@@ -20,29 +21,36 @@ export default () => {
   /**
    * Emit an event when the socket connects, or immidiately if we're already connected.
    */
-  const emit = (event, data) => {
-    if (connected) io.emit(event, data);
-    else pendingEvents.push([event, data]);
+  const emit = (event, data, cb = () => {}) => {
+    const fn = data => cb(typeof data === 'string' ? parse(data) : data);
+    data = data !== undefined ? stringify(data) : data;
+    if (connected) io.emit(event, data, fn);
+    else pendingEvents.push([event, data, fn]);
   };
 
-  // Give the server access to our store
-  io.on('getState', () => emit('getState', store.getState()));
-  io.on('action', action => store.dispatch(action));
+  const on = (event, cb) => {
+    io.on(event, (data, fn) => {
+      data = typeof data === 'string' ? parse(data) : data;
+      cb(data, ret => fn(ret !== undefined ? stringify(ret) : ret));
+    });
+  };
 
-  io.on('pushWorld', world => store.dispatch(pushWorld(world)));
-  io.on('forceWorld', world => store.dispatch(forceWorld(world)));
+  const promiseEmit = (event, data) => new Promise(done => emit(event, data, done));
+
+  on('pushWorld', world => store.dispatch(pushWorld(world)));
+  on('forceWorld', world => store.dispatch(forceWorld(world)));
 
   /**
    * Public APIs
    */
-  const sendAttempt = (wid, code) => emit('attempt', { wid, code });
+  const sendAttempt = (wid, code, won) => emit('attempt', { wid, code, won });
 
   const setStore = store_ => store = store_;
 
   const publicAPI = { sendAttempt, setStore };
 
   return new Promise((resolve, reject) => {
-    io.on('authenticated', () => {
+    on('authenticated', () => {
       console.log('Authed!');
       resolve(publicAPI);
     });
@@ -57,9 +65,11 @@ export default () => {
         userProfile = profile;
         userToken = hash.id_token;
 
-        emit('authenticate', { token: userToken });
+        // We use io.emit directly because token is consumed by socketio-jwt, which requires an
+        // object
+        io.emit('authenticate', { token: userToken });
 
-        io.on('unauthorized', (err, cb) => {
+        on('unauthorized', (err, cb) => {
           reject(new Error('Auth Failed!'));
           return cb();
         });

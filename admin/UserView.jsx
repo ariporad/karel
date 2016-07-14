@@ -1,3 +1,4 @@
+import { withRouter } from 'react-router';
 import { Table, Button } from 'react-bootstrap';
 import { formatTimestamp } from './utils';
 
@@ -9,14 +10,14 @@ const styles = {
   actions: {
     width: 70,
     textAlign: 'center',
-  },
-  table: {
+  }, table: {
     marginTop: 12,
     border: '1px solid #ddd',
   },
 };
 
-const _UserView = Radium(({ user, worlds }) => {
+const _UserView = withRouter(Radium(({ user, worlds, router }) => {
+  const makeAttemptUrl = (uid, wid, num) => `/admin/users/${uid}/attempts/${wid}/${num}`;
   const attempts = [];
   Object.keys(user.attempts).forEach(wid => {
     user.attempts[wid].forEach(attempt => {
@@ -42,12 +43,19 @@ const _UserView = Radium(({ user, worlds }) => {
             </tr>
           </thead>
           <tbody>
-            {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map(attempt => (
+            {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map((attempt, num) => (
               <tr>
                 <td style={styles.wid}>{attempt.wid}</td>
                 <td><b>{worlds[attempt.wid].text.trim().split('\n')[0]}</b></td>
                 <td>{formatTimestamp(attempt.date)}</td>
-                <td style={styles.actions}><Button bsStyle="link">View</Button></td>
+                <td style={styles.actions}>
+                  <Button
+                    bsStyle="link"
+                    onClick={() => {
+                      router.push(makeAttemptUrl(user.profile.user_id, attempt.wid, num))
+                    }}
+                  >View</Button>
+                </td>
               </tr>
             )) : <tr><td colSpan={4} style={{ textAlign: 'center' }}>No Attempts</td></tr>}
           </tbody>
@@ -55,7 +63,7 @@ const _UserView = Radium(({ user, worlds }) => {
       </div>
     </div>
   );
-});
+}));
 
 export default class UserView extends React.Component {
   state = { loading: true, error: null, user: null, worlds: null };
@@ -63,7 +71,11 @@ export default class UserView extends React.Component {
   componentDidMount() {
     Promise.all([this.props.api.userInfo(this.props.params.uid), this.props.api.listWorlds()])
       .then(([user, worlds]) => this.setState({ loading: false, user, worlds }))
-      .catch(err => this.setState({ loading: false, error: err }));
+      .catch(err => {
+        console.error(err.message);
+        console.error(err.stack);
+        this.setState({ loading: false, error: err })
+      });
   }
 
   render() {

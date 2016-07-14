@@ -1,11 +1,34 @@
+import { stringify, parse } from 'circular-json';
 import socketioJwt from 'socketio-jwt';
 import { getProfile } from './utils';
-import { createWorld, pushWorld, forceWorld, pushWorldAll, forceWorldAll, deleteWorld } from './ducks/admin';
+import {
+  createWorld,
+  pushWorld,
+  forceWorld,
+  pushWorldAll,
+  forceWorldAll,
+  deleteWorld,
+  editWorld,
+} from './ducks/admin';
 
 const debug = dbg('karel:server:admin');
 
 export const setupSocket = (socket, io, store) => {
-  socket.on('createWorld', (world, fn) => {
+  const emit = (event, data, cb = () => {}) => {
+    const fn = data => cb(typeof data === 'string' ? parse(data) : data);
+    data = data !== undefined ? stringify(data) : data;
+    socket.emit(event, data, fn);
+  };
+
+  const on = (event, cb) => {
+    socket.on(event, (data, fn) => {
+      data = typeof data === 'string' ? parse(data) : data;
+      debug('Socket.io: Got Data:', typeof data, data);
+      cb(data, ret => fn(ret !== undefined ? stringify(ret) : ret));
+    });
+  };
+
+  on('createWorld', (world, fn) => {
     debug('Creating World:\n%s', world);
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
@@ -13,42 +36,47 @@ export const setupSocket = (socket, io, store) => {
     fn(wid);
   });
 
-  socket.on('deleteWorld', (wid, fn) => {
+  on('editWorld', ({ wid, text }, fn) => {
+    debug('Updating World:', wid, 'To:\n', text);
+    store.dispatch(editWorld(wid, text));
+    fn();
+  });
+  on('deleteWorld', (wid, fn) => {
     debug('Deleting World:', wid);
     store.dispatch(deleteWorld(wid));
     fn();
   });
 
-  socket.on('push', ({ wid, uid }, fn) => {
+  on('push', ({ wid, uid }, fn) => {
     store.dispatch(pushWorld(wid, uid))
     fn();
   });
-  socket.on('force', ({ wid, uid }, fn) => {
+  on('force', ({ wid, uid }, fn) => {
     store.dispatch(forceWorld(wid, uid))
     fn();
   });
 
-  socket.on('pushAll', (wid, fn) => {
+  on('pushAll', (wid, fn) => {
     store.dispatch(pushWorldAll(wid));
     fn();
   });
 
-  socket.on('forceAll', (wid, fn) => {
+  on('forceAll', (wid, fn) => {
     store.dispatch(forceWorldAll(wid));
     fn();
   });
 
-  socket.on('listWorlds', (null_, fn) => {
+  on('listWorlds', (null_, fn) => {
     fn(store.getState().admin.get('worlds').toJS());
   });
-  socket.on('listUsers', (null_, fn) => {
+  on('listUsers', (null_, fn) => {
     fn(store.getState().users.toJS());
   });
-  socket.on('userInfo', (uid, fn) => {
+  on('userInfo', (uid, fn) => {
     if (!store.getState().users.has(uid)) return fn({ error: 'No Such User!' });
     fn(store.getState().users.get(uid).toJS());
   });
-  socket.on('worldInfo', (wid, fn) => {
+  on('worldInfo', (wid, fn) => {
     wid = `${wid}`;
     debug('WorldInfo for wid:', wid, typeof wid);
     const state = store.getState();

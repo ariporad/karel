@@ -1,3 +1,4 @@
+import { stringify, parse } from 'circular-json';
 import IO from 'socket.io-client';
 import Auth0Lock from 'auth0-lock';
 
@@ -14,45 +15,55 @@ export default () => {
   io.on('connect', () => {
     debug('connected');
     connected = true;
-    pendingEvents.forEach(args => io.emit(...args));
+    pendingEvents.forEach(args => emit(...args));
     pendingEvents = null;
   });
 
   /**
    * Emit an event when the socket connects, or immidiately if we're already connected.
    */
-  const emit = (event, data) => {
-    if (connected) io.emit(event, data);
-    else pendingEvents.push([event, data]);
+  const emit = (event, data, cb = () => {}) => {
+    const fn = data => cb(typeof data === 'string' ? parse(data) : data);
+    data = data !== undefined ? stringify(data) : data;
+    if (connected) io.emit(event, data, fn);
+    else pendingEvents.push([event, data, fn]);
   };
 
-  // Give the server access to our store
-  io.on('getState', () => io.emit('getState', store.getState()));
-  io.on('action', action => store.dispatch(action));
+  const on = (event, cb) => {
+    io.on(event, (data, fn) => {
+      data = typeof data === 'string' ? parse(data) : data;
+      cb(data, ret => fn(ret !== undefined ? stringify(ret) : ret));
+    });
+  };
+
+  const promiseEmit = (event, data) => new Promise(done => emit(event, data, done));
 
   /**
    * Public APIs
    */
   const setStore = store_ => store = store_;
 
-  const createWorld = text => new Promise(done => io.emit('createWorld', text, done));
-  const deleteWorld = wid  => new Promise(done => io.emit('deleteWorld', wid, done));
+  const creaetWorld = text => promiseEmit('createWorld', text);
+  const createWorld = text => promiseEmit('createWorld', text);
+  const deleteWorld = wid  => promiseEmit('deleteWorld', wid);
+  const editWorld = (wid, text) => promiseEmit('editWorld', { wid, text });
 
-  const push = (wid, uid) => new Promise(done => io.emit('push', { wid, uid }, done));
-  const force = (wid, uid) => new Promise(done => io.emit('force', { wid, uid }, done));
+  const push = (wid, uid) => promiseEmit('push', { wid, uid });
+  const force = (wid, uid) => promiseEmit('force', { wid, uid });
 
-  const pushAll = wid => new Promise(done => io.emit('pushAll', wid, done));
-  const forceAll = wid => new Promise(done => io.emit('forceAll', wid, done));
+  const pushAll = wid => promiseEmit('pushAll', wid);
+  const forceAll = wid => promiseEmit('forceAll', wid);
 
-  const listWorlds = () => new Promise(done => io.emit('listWorlds', null, done));
-  const listUsers = () => new Promise(done => io.emit('listUsers', null, done));
+  const listWorlds = () => promiseEmit('listWorlds', null);
+  const listUsers = () => promiseEmit('listUsers', null);
 
-  const worldInfo = wid => new Promise(done => io.emit('worldInfo', wid, done));
-  const userInfo = uid => new Promise(done => io.emit('userInfo', uid, done));
+  const worldInfo = wid => promiseEmit('worldInfo', wid);
+  const userInfo = uid => promiseEmit('userInfo', uid);
 
   const publicAPI = {
     createWorld,
     deleteWorld,
+    editWorld,
     setStore,
     listWorlds,
     listUsers,
@@ -65,7 +76,8 @@ export default () => {
   };
 
   return new Promise((resolve, reject) => {
-    io.on('authenticated', () => {
+    debugger;
+    on('authenticated', () => {
       debug('Authenticated!');
       resolve(publicAPI);
     });
@@ -81,9 +93,11 @@ export default () => {
           document.location.pathname = '';
         }
 
-        emit('authenticate', { token });
+        // We use io.emit directly here, because token is consumed by socketio-jwt, which requires
+        // an object.
+        io.emit('authenticate', { token });
 
-        io.on('unauthorized', (err, cb) => {
+        on('unauthorized', (err, cb) => {
           debug('Authed failed!\n%s\n%s', err.message, err.stack);
           reject(new Error('Auth Failed!'));
 

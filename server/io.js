@@ -1,3 +1,4 @@
+import { stringify, parse } from 'circular-json';
 import socketioJwt from 'socketio-jwt';
 import { getProfile } from './utils';
 import { connect, disconnect, attempt } from './ducks/users';
@@ -5,6 +6,20 @@ import { connect, disconnect, attempt } from './ducks/users';
 const debug = dbg('karel:server:io');
 
 export const setupSocket = (socket, io, store) => {
+  // Here, we have to monkey patch, because we send the store out of scope.
+  const emit = ::socket.emit;
+  const on = ::socket.on;
+  socket.emit = (event, data, cb = () => {}) => {
+    const fn = data => cb(typeof data === 'string' ? parse(data) : data);
+    data = data !== undefined ? stringify(data) : data;
+    emit(event, data, fn);
+  };
+  socket.on = (event, cb) => {
+    on(event, (data, fn) => {
+      data = typeof data === 'string' ? parse(data) : data;
+      cb(data, ret => fn(ret !== undefined ? stringify(ret) : ret));
+    });
+  };
   try {
     const user = store.dispatch(connect(socket.token, socket.decoded_token, socket.profile, socket));
     const uid = user.get('id');
@@ -14,7 +29,7 @@ export const setupSocket = (socket, io, store) => {
       debug('User Disconnected:', uid);
       store.dispatch(disconnect(uid))
     });
-    socket.on('attempt', ({ wid, code }) => store.dispatch(attempt(uid, code, wid)));
+    socket.on('attempt', ({ wid, code, won }) => store.dispatch(attempt(uid, code, wid, won)));
   } catch (e) {
     console.error(e.message);
     console.error(e.stack);

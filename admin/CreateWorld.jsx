@@ -32,7 +32,7 @@ class CreateWorld extends React.Component {
     e.preventDefault();
     if (!confirm('Create World?')) return;
     this.props.api.createWorld(this.state.text)
-      .then(wid => { debugger; this.props.router.push(`/admin/worlds/${wid}`) });
+      .then(wid => { this.props.router.push(`/admin/worlds/${wid}`) });
   }
 
   render() {
@@ -44,7 +44,7 @@ class CreateWorld extends React.Component {
             value={this.state.text}
             onChange={e => this.setState({ text: e.target.value })}
             componentClass='textarea'
-            style={{ height: '75vh' }}
+            style={{ height: '75vh', fontFamily: 'monospace' }}
           />
         </FormGroup>
         <FormGroup>

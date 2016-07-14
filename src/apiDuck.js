@@ -16,7 +16,7 @@ export const pushWorld = world => (dispatch, getState) => {
 export const forceWorld = world => (dispatch, getState, api) => {
   debug('Forcing World:', world);
   const state = getState();
-  api.sendAttempt(state.KarelWorld.wid, state.Editor.code);
+  api.sendAttempt(state.KarelWorld.wid, state.Editor.code, false);
   return dispatch(setWorld(world));
 };
 export const nextWorld = () => (dispatch, getState) => {
