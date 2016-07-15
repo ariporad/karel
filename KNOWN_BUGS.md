@@ -1,0 +1,6 @@
+- [ ] If you have a really large alert window, the success/error popups can be really small
+- [ ] There has to be *something* (that's not whitespace) in the default code (and possiblibly other parts of a world).
+- [ ] Push/Force (to just a few people) are no-ops.
+- [ ] Going to /admin is a blank page.
+- [ ] The bombs need better graphics.
+- [ ] The user authentication flow is terrible.

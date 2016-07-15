@@ -1,13 +1,22 @@
+import karelSVG from 'file!./karel.svg';
+import superkarelSVG from 'file!./superkarel.svg';
+import ultrakarelSVG from 'file!./ultrakarel.svg';
+
 const KarelSpy = ({ cx, cy, dir, size }) => {
-  let x = cx - size / 2;
-  let y = cy - size / 2;
-  let pad = size / 8;
+  const pad = size / 8;
+  const x = (cx - size / 2) + pad;
+  const y = (cy - size / 2) + pad;
+
+  let transform = `rotate(${dir * -90}, ${cx}, ${cy})`;
+  // Only flip when going left/right.
+  // http://stackoverflow.com/a/23902773/1928484
+  if (dir === 0 || dir === 2) transform = `translate(${2 * cx}, 0) scale(-1, 1) ${transform}`;
+  else transform = `translate(0, ${2 * cy}) scale(1, -1) ${transform}`;
+
   return (
-    <polygon
-      transform={`rotate(${dir * -90}, ${cx}, ${cy})`}
-      points={[[x + pad, y + pad], [x + pad, y + size - pad], [x + size - pad, cy]]}
-      fill="black"
-    />
+    <g transform={transform}>
+      <image x={x} y={y} width={size * .75} height={size * .75} xlinkHref={karelSVG}/>
+    </g>
   );
 };
 

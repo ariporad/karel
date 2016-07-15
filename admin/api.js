@@ -16,7 +16,7 @@ export default () => {
     debug('connected');
     connected = true;
     pendingEvents.forEach(args => emit(...args));
-    pendingEvents = null;
+    pendingEvents = [];
   });
 
   /**
@@ -37,7 +37,9 @@ export default () => {
   };
 
   const promiseEmit = (event, data) => new Promise((resolve, reject) => {
-    emit(event, data, ({ err, ...ret }) => {
+    emit(event, data, data => {
+      // For some reason, editWorld sometimes returns null. I have no clue why.
+      let { err, ...ret } = data || {};
       if (err) return reject(err);
       resolve(ret);
     });

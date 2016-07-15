@@ -36,18 +36,18 @@ export const setupSocket = (socket, io, store) => {
         ret = { err, status: 500 };
         debug('socket.io: Error:', err);
       }
-      fn(ret !== 'undefined' ? stringify(ret) : ret);
+      fn(stringify(ret !== 'undefined' && ret !== null ? ret : {}));
     });
   };
 
-  on('createWorld', (world, fn) => {
+  on('createWorld', world => {
     debug('Creating World:\n%s', world);
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
     return wid;
   });
 
-  on('editWorld', ({ wid, text }, fn) => {
+  on('editWorld', ({ wid, text }) => {
     debug('Updating World:', wid, 'To:\n', text);
     store.dispatch(editWorld(wid, text));
   });

@@ -12,7 +12,7 @@ class EditWorld extends React.Component {
       .catch(err => this.setState({ err }));
   }
 
-  fetchData() {
+  componentDidMount() {
     this.props.api.worldInfo(this.props.params.wid)
       .then(({ world: { text } }) => this.setState({ text, loading: false }))
       .catch(err => this.setState({ err }));
