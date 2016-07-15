@@ -1,6 +1,7 @@
 import { withRouter } from 'react-router';
 import { Table, Button } from 'react-bootstrap';
 import { formatTimestamp } from './utils';
+import ErrorPage from './ErrorPage';
 
 const styles = {
   wid: {
@@ -43,21 +44,24 @@ const _UserView = withRouter(Radium(({ user, worlds, router }) => {
             </tr>
           </thead>
           <tbody>
-            {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map((attempt, num) => (
-              <tr>
-                <td style={styles.wid}>{attempt.wid}</td>
-                <td><b>{worlds[attempt.wid].text.trim().split('\n')[0]}</b></td>
-                <td>{formatTimestamp(attempt.date)}</td>
-                <td style={styles.actions}>
-                  <Button
-                    bsStyle="link"
-                    onClick={() => {
-                      router.push(makeAttemptUrl(user.profile.user_id, attempt.wid, num))
-                    }}
-                  >View</Button>
-                </td>
-              </tr>
-            )) : <tr><td colSpan={4} style={{ textAlign: 'center' }}>No Attempts</td></tr>}
+            {attempts.length > 0 ? attempts.sort((a, b) => b.date - a.date).map((attempt, num) => {
+              if (!worlds[attempt.wid]) return null;
+              return (
+                <tr>
+                  <td style={styles.wid}>{attempt.wid}</td>
+                  <td><b>{worlds[attempt.wid].text.trim().split('\n')[0]}</b></td>
+                  <td>{formatTimestamp(attempt.date)}</td>
+                  <td style={styles.actions}>
+                    <Button
+                      bsStyle="link"
+                      onClick={() => {
+                        router.push(makeAttemptUrl(user.profile.user_id, attempt.wid, num))
+                      }}
+                    >View</Button>
+                  </td>
+                </tr>
+              );
+            }) : <tr><td colSpan={4} style={{ textAlign: 'center' }}>No Attempts</td></tr>}
           </tbody>
         </Table>
       </div>
@@ -66,21 +70,28 @@ const _UserView = withRouter(Radium(({ user, worlds, router }) => {
 }));
 
 export default class UserView extends React.Component {
-  state = { loading: true, error: null, user: null, worlds: null };
+  state = { loading: true, err: null, user: null, worlds: null };
+
+  fetchData(props) {
+    Promise.all([props.api.userInfo(props.params.uid), props.api.listWorlds()])
+      .then(([user, worlds]) => {
+        debugger;
+        this.setState({ loading: false, user, worlds })
+      })
+      .catch(err => this.setState({ err }));
+  }
 
   componentDidMount() {
-    Promise.all([this.props.api.userInfo(this.props.params.uid), this.props.api.listWorlds()])
-      .then(([user, worlds]) => this.setState({ loading: false, user, worlds }))
-      .catch(err => {
-        console.error(err.message);
-        console.error(err.stack);
-        this.setState({ loading: false, error: err })
-      });
+    this.fetchData(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!equal(nextProps, this.props)) this.fetchData(nextProps);
   }
 
   render() {
+    if (this.state.err) return <ErrorPage err={this.state.err}/>
     if (this.state.loading) return <h1>Loading...</h1>;
-    if (this.state.error) return <h1><code>{this.state.error.message || this.state.error}</code></h1>;
     return <_UserView worlds={this.state.worlds} user={this.state.user} />;
   }
 };

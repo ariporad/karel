@@ -10,19 +10,6 @@ export const PUSH = 'karel-server/users/PUSH';
 
 const debug = dbg('karel:server:ducks:user');
 
-const DEFAULT_WORLD = `
-Default World (Min)
-The Minimalist Default World! <b>Bold Text!</b>
----
-moveForward();
-pickupCrown();
----
-. . . .
-. . . .
-. . . .
-K @ . .
-`;
-
 
 export const connect = (token, decoded, profile, socket = null) => (dispatch, getState) => {
   const uid = decoded.sub;

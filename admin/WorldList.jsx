@@ -1,11 +1,13 @@
 import { Table, ButtonToolbar, ButtonGroup, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router';
+import ErrorPage from './ErrorPage';
 
 const styles = {
   table: {
     tableLayout: 'fixed',
     border: '1px solid #dddddd',
-  }, title: {
+  },
+  title: {
     display: 'inline',
     verticalAlign: 'center',
   },
@@ -90,16 +92,19 @@ export const _WorldList = withRouter(Radium(({ worlds, router, pushAll, forceAll
 }));
 
 export default class WorldList extends React.Component {
-  state = { worlds: [], loading: true };
+  state = { worlds: [], loading: true, err: null };
 
   componentDidMount() {
-    this.props.api.listWorlds().then(worlds => {
-      worlds = Object.keys(worlds).map(key => worlds[key]);
-      this.setState({ worlds, loading: false })
-    });
+    this.props.api.listWorlds()
+      .then(worlds => {
+        worlds = Object.keys(worlds).map(key => worlds[key]);
+        this.setState({ worlds, loading: false })
+      })
+      .catch(err => this.setState({ err }));
   }
 
   render() {
+    if (this.state.err) return <ErrorPage err={this.state.err}/>
     if (this.loading) return <h1>Loading...</h1>;
     return <_WorldList
       worlds={this.state.worlds}

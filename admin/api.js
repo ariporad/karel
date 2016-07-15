@@ -36,7 +36,12 @@ export default () => {
     });
   };
 
-  const promiseEmit = (event, data) => new Promise(done => emit(event, data, done));
+  const promiseEmit = (event, data) => new Promise((resolve, reject) => {
+    emit(event, data, ({ err, ...ret }) => {
+      if (err) return reject(err);
+      resolve(ret);
+    });
+  });
 
   /**
    * Public APIs
@@ -76,7 +81,6 @@ export default () => {
   };
 
   return new Promise((resolve, reject) => {
-    debugger;
     on('authenticated', () => {
       debug('Authenticated!');
       resolve(publicAPI);

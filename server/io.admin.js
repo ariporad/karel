@@ -1,5 +1,6 @@
 import { stringify, parse } from 'circular-json';
 import socketioJwt from 'socketio-jwt';
+import StatusError from './StatusError';
 import { getProfile } from './utils';
 import {
   createWorld,
@@ -14,6 +15,7 @@ import {
 const debug = dbg('karel:server:admin');
 
 export const setupSocket = (socket, io, store) => {
+  const worldExists = wid => !store.getState().admin.get('worlds').has(wid)
   const emit = (event, data, cb = () => {}) => {
     const fn = data => cb(typeof data === 'string' ? parse(data) : data);
     data = data !== undefined ? stringify(data) : data;
@@ -24,7 +26,17 @@ export const setupSocket = (socket, io, store) => {
     socket.on(event, (data, fn) => {
       data = typeof data === 'string' ? parse(data) : data;
       debug('Socket.io: Got Data:', typeof data, data);
-      cb(data, ret => fn(ret !== undefined ? stringify(ret) : ret));
+      let ret;
+      try {
+        ret = cb(data);
+      } catch (err) {
+        if (err instanceof StatusError) {
+          ret = { status: err.status, err: err };
+        }
+        ret = { err, status: 500 };
+        debug('socket.io: Error:', err);
+      }
+      fn(ret !== 'undefined' ? stringify(ret) : ret);
     });
   };
 
@@ -32,58 +44,36 @@ export const setupSocket = (socket, io, store) => {
     debug('Creating World:\n%s', world);
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
-    store.dispatch(pushWorldAll(wid));
-    fn(wid);
+    return wid;
   });
 
   on('editWorld', ({ wid, text }, fn) => {
     debug('Updating World:', wid, 'To:\n', text);
     store.dispatch(editWorld(wid, text));
-    fn();
   });
-  on('deleteWorld', (wid, fn) => {
+  on('deleteWorld', wid => {
     debug('Deleting World:', wid);
     store.dispatch(deleteWorld(wid));
-    fn();
   });
 
-  on('push', ({ wid, uid }, fn) => {
-    store.dispatch(pushWorld(wid, uid))
-    fn();
-  });
-  on('force', ({ wid, uid }, fn) => {
-    store.dispatch(forceWorld(wid, uid))
-    fn();
-  });
+  on('push', ({ wid, uid }) => store.dispatch(pushWorld(wid, uid)));
+  on('force', ({ wid, uid }) => store.dispatch(forceWorld(wid, uid)));
 
-  on('pushAll', (wid, fn) => {
-    store.dispatch(pushWorldAll(wid));
-    fn();
-  });
+  on('pushAll', wid => store.dispatch(pushWorldAll(wid)));
+  on('forceAll', wid => store.dispatch(forceWorldAll(wid)));
 
-  on('forceAll', (wid, fn) => {
-    store.dispatch(forceWorldAll(wid));
-    fn();
-  });
-
-  on('listWorlds', (null_, fn) => {
-    fn(store.getState().admin.get('worlds').toJS());
-  });
-  on('listUsers', (null_, fn) => {
-    fn(store.getState().users.toJS());
-  });
-  on('userInfo', (uid, fn) => {
-    if (!store.getState().users.has(uid)) return fn({ error: 'No Such User!' });
-    fn(store.getState().users.get(uid).toJS());
+  on('listWorlds', () => store.getState().admin.get('worlds').toJS());
+  on('listUsers', () => store.getState().users.toJS());
+  on('userInfo', uid => {
+    if (!store.getState().users.has(uid)) throw StatusError(404, 'User Not Found');
+    return store.getState().users.get(uid).toJS();
   });
   on('worldInfo', (wid, fn) => {
     wid = `${wid}`;
     debug('WorldInfo for wid:', wid, typeof wid);
     const state = store.getState();
 
-    if (!state.admin.get('worlds').has(wid)) {
-      return fn({ world: null, attempts: null, error: `No Such World: ${wid}!` });
-    }
+    if (!state.admin.get('worlds').has(wid)) throw new StatusError(404, 'World Not Found');
 
     const world = state.admin.get('worlds').get(wid).toJS();
 
@@ -104,7 +94,7 @@ export const setupSocket = (socket, io, store) => {
         });
       });
 
-    fn({ world, attempts });
+    return { world, attempts };
   });
 };
 
@@ -113,13 +103,13 @@ export default (io, store) => {
     socket.on('authenticate', ({ token }) => socket.token = token);
     socketioJwt.authorize({
       secret: Buffer(process.env.AUTH0_CLIENT_SECRET, 'base64'),
-      timeout: 20000,
+      timeout: 15000,
       // Undocumented option
       additional_auth: (decoded, onSuccess, onError) => {
         getProfile(socket.token).then(profile => {
           socket.profile = profile;
           if (profile.admin === true) onSuccess();
-          else onError('You\'re not an admin!', 'ENOTADMIN');
+          else onError('You\'re not an admin!', 403);
           setupSocket(socket, io, store);
         }).catch(onError);
       },

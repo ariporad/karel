@@ -4,6 +4,8 @@ import RedBox from 'redbox-react';
 import configureStore from './redux';
 import makeApiClient from './api';
 
+import './handleErrors';
+
 // dbg is defined with webpack.DefinePlugin, which doesn't work in the console
 global.dbg = dbg;
 

@@ -62,7 +62,7 @@ export const reducer = (
     bombs = state.bombs.map(bomb => {
       if (typeof bomb.limit === 'boolean') return bomb;
       const limit = bomb.limit - 1;
-      if (limit <= 0) throw KarelError('A bomb exploded!', action.meta);
+      if (limit < 0) throw KarelError('A bomb exploded!', action.meta);
       return { ...bomb, limit };
     });
   }

@@ -1,5 +1,6 @@
 import { FormGroup, ControlLabel, FormControl, Button } from 'react-bootstrap';
 import { withRouter } from 'react-router';
+import ErrorPage from './ErrorPage';
 
 const DEFAULT_TEMPLATE = `
 Title
@@ -26,16 +27,18 @@ this.shouldNot(runWithoutModification());
 `.trim();
 
 class CreateWorld extends React.Component {
-  state = { text: DEFAULT_TEMPLATE }
+  state = { text: DEFAULT_TEMPLATE, err: null }
 
   handleSubmit(e) {
     e.preventDefault();
     if (!confirm('Create World?')) return;
     this.props.api.createWorld(this.state.text)
-      .then(wid => { this.props.router.push(`/admin/worlds/${wid}`) });
+      .then(wid => { this.props.router.push(`/admin/worlds/${wid}`) })
+      .catch(err => this.setState({ err }));
   }
 
   render() {
+    if (this.state.err) return <ErrorPage err={this.state.err} />
     return (
       <form>
         <FormGroup controlId='createWorld'>

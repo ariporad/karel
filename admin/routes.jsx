@@ -8,6 +8,9 @@ import UserView from './UserView';
 import CreateWorld from './CreateWorld';
 import EditWorld from './EditWorld';
 import AttemptView from './AttemptView';
+import ErrorPage from './ErrorPage';
+
+const NotFoundError = props => <ErrorPage err={{ status: 404, message: 'Not Found' }} {...props} />;
 
 export default (api) => {
   const injectApi = Comp => props => <Comp {...props} api={api} />;
@@ -25,6 +28,7 @@ export default (api) => {
           <Route path=':uid/attempts/:wid/:num' component={injectApi(AttemptView)} />
           <Route path=':uid' component={injectApi(UserView)} />
         </Route>
+        <Route path="*" component={NotFoundError} />
       </Route>
     </Router>
   );

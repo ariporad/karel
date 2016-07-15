@@ -94,16 +94,19 @@ export const _UserList = withRouter(Radium(({ users, router }) => {
 
 
 export default class UserList extends React.Component {
-  state = { users: [], loading: true };
+  state = { users: [], loading: true, err: null };
 
   componentDidMount() {
-    this.props.api.listUsers().then(users => {
-      users = Object.keys(users).map(key => users[key]);
-      this.setState({ users, loading: false })
-    });
+    this.props.api.listUsers()
+      .then(users => {
+        users = Object.keys(users).map(key => users[key]);
+        this.setState({ users, loading: false })
+      })
+      .catch(err => this.setState({ err }));
   }
 
   render() {
+    if (this.err) return <ErrorPage err={this.state.err} />;
     if (this.loading) return <h1>Loading...</h1>;
     return <_UserList users={this.state.users} />;
   }

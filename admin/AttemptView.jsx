@@ -1,7 +1,10 @@
 import { Well } from 'react-bootstrap';
 import { withRouter, Link } from 'react-router';
 import { formatTimestamp } from './utils';
+import equal from 'deep-equal';
 import KarelWorld from './KarelWorld';
+import StatusError from '../server/StatusError';
+import ErrorPage from './ErrorPage';
 
 const PANEL_HEIGHT = 78/* vh */;
 
@@ -85,29 +88,38 @@ export const _AttemptView = Radium(({ user, world, num }) => {
 });
 
 class AttemptView extends React.Component {
-  state = { loading: true, user: null, world: null };
+  state = { loading: true, user: null, world: null, err: null };
+
+  fetchData(props) {
+    Promise
+      .all([
+        this.props.api.userInfo(props.params.uid),
+        this.props.api.worldInfo(props.params.wid + ''),
+      ])
+      .then(([user, { world }]) => {
+        if (
+          !user.attempts[world.wid] ||
+          !user.attempts[world.wid][parseInt(props.params.num, 10)]
+        ) {
+          throw new StatusError(404, 'Attempt Not Found!');
+        }
+        user.attempts[world.wid][parseInt(props.params.num, 10)]
+        this.setState({ loading: false, user, world })
+      })
+      .catch(err => this.setState({ loading: false, err }));
+  }
 
   componentDidMount() {
-    Promise.all([
-      this.props.api.userInfo(this.props.params.uid),
-      this.props.api.worldInfo(this.props.params.wid + ''),
-    ])
-      .then(([user, { world }]) => {
-        try {
-          this.setState({ loading: false, user, world })
-        } catch (err) {
-          console.error(err.message);
-          console.error(err.stack);
-        }
-      })
-      .catch(err => {
-        console.error(err.message);
-        console.error(err.stack);
-      });
+    this.fetchData(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!equal(nextProps, this.props)) this.fetchData(nextProps);
   }
 
   render() {
     if (this.state.loading) return <h1>Loading...</h1>;
+    if (this.state.err) return <ErrorPage err={this.state.err} />;
     return (
       <_AttemptView
         user={this.state.user}

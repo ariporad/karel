@@ -1,4 +1,5 @@
 import Immutable from 'immutable';
+import StatusError from '../StatusError';
 import { PUSH, DELETE_ATTEMPTS_FOR_WORLD } from './users';
 
 const debug = dbg('karel:server:ducks:admin');
@@ -9,9 +10,12 @@ const UPDATE_WORLD = 'karel-server/admin/UPDATE_WORLD';
 
 // In a way I feel this might be going to far down the pseudo-action-creators path.
 export const get = (wid, uid) => (dispatch, getState) => {
+  const state = getState();
   const ret = {};
-  if (uid) ret.user = getState().users.get(uid);
-  if (wid) ret.world = getState().admin.get('worlds').get(wid);
+  if (wid && !state.admin.get('worlds').has(wid)) throw new StatusError(404, 'World Doesn\'t Exist!');
+  if (uid && !state.users.has(uid)) throw new StatusError(404, 'World Doesn\'t Exist!');
+  if (uid) ret.user = state.users.get(uid);
+  if (wid) ret.world = state.admin.get('worlds').get(wid);
   return ret;
 };
 
@@ -34,9 +38,13 @@ export const createWorld = world => (dispatch, getState) => {
   return wid;
 };
 
-export const editWorld = (wid, text) => ({ type: UPDATE_WORLD, payload: { wid, text } });
+export const editWorld = (wid, text) => (dispatch, getState) => {
+  if (!getState().admin.get('worlds').has(wid)) throw new StatusError(409, 'World Doesn\'t Exist!');
+  dispatch({ type: UPDATE_WORLD, payload: { wid, text } });
+};
 
 export const deleteWorld = wid => (dispatch, getState) => {
+  if (!getState().admin.get('worlds').has(wid)) throw new StatusError(404, 'World Doesn\'t Exist!');
   dispatch({ type: DELETE_WORLD, payload: wid });
   dispatch({ type: DELETE_ATTEMPTS_FOR_WORLD, payload: wid });
 }

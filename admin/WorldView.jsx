@@ -3,6 +3,7 @@ import { withRouter } from 'react-router';
 import { parseWorld } from '../src/KarelWorld/parseWorld';
 import { formatTimestamp } from './utils';
 import KarelWorld from './KarelWorld';
+import ErrorPage from './ErrorPage';
 
 const CONTAINER_HEIGHT = 90 /* vh */;
 const TOP_HALF_HEIGHT = 40 /* % */ / 100;
@@ -162,17 +163,25 @@ export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, p
 }));
 
 export default class WorldView extends React.Component  {
-  state = { world: null, attempts: null, loading: true, error: null };
+  state = { world: null, attempts: null, loading: true, err: null };
+
+  fetchData(props) {
+    props.api.worldInfo(props.params.wid)
+      .then(({ world, attempts }) => this.setState({ world, attempts, loading: false }))
+      .catch(err => this.setState({ err, loading: false }));
+  }
 
   componentDidMount() {
-    this.props.api.worldInfo(this.props.params.wid)
-      .then(({ world, attempts, error }) => this.setState({ world, attempts, error, loading: false }))
-      .catch(err => this.setState({ error: err, loading: false }));
+    this.fetchData(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!equal(nextProps, this.props)) this.fetchData(nextProps);
   }
 
   render() {
+    if (this.state.err) return <ErrorPage err={this.state.err}/>;
     if (this.state.loading) return <h1>Loading...</h1>;
-    if (this.state.error) return <h1><code>{this.state.error.toString()}</code></h1>;
     return <_WorldView
       world={this.state.world}
       attempts={this.state.attempts}
