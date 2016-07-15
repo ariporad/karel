@@ -42,10 +42,10 @@ export const _KarelWorld = Radium(({ style, karel, bombs, lasers, height, width,
   const c = cpos(SIZE);
   for (let y = 0; y < height; ++y) {
     for (let x = 0; x < width; ++x) {
+      if (lasers[y][x]) objects.push(<Laser key={`L${x}:${y}`} x={(x + 1) * SIZE} y1={y * SIZE} y2={y * SIZE + SIZE} />);
       // Karel is semi-transparent, so the dot would show through
       if (x === karel.x && y === karel.y) continue;
       objects.push(<circle key={`${x}:${y}`} cx={c(x)} cy={c(y)} r={5} />);
-      if (lasers[y][x]) objects.push(<Laser key={`L${x}:${y}`} x={(x + 1) * SIZE} y1={y * SIZE} y2={y * SIZE + SIZE} />);
     }
   }
   bombs.forEach(bomb => {
