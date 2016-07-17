@@ -4,6 +4,8 @@ import RedBox from 'redbox-react';
 import configureStore from './redux';
 import makeApiClient from './api';
 
+// Simplest Object.values polyfill ever. (Probobly not spec compliant).
+Object.values = Object.values || (arr => Object.keys(arr).map(k => arr[k]));
 import './handleErrors';
 
 // dbg is defined with webpack.DefinePlugin, which doesn't work in the console

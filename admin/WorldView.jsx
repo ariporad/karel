@@ -3,6 +3,7 @@ import { withRouter } from 'react-router';
 import { parseWorld } from '../src/KarelWorld/parseWorld';
 import { formatTimestamp } from './utils';
 import KarelWorld from './KarelWorld';
+import SendModal from './SendModal';
 import ErrorPage from './ErrorPage';
 
 const CONTAINER_HEIGHT = 90 /* vh */;
@@ -88,13 +89,44 @@ const styles = {
   },
 };
 
-export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, pushAll, forceAll, deleteWorld, router }) => {
+export const _WorldView = withRouter(Radium(({
+  world: { wid, text },
+  push,
+  force,
+  pushAll,
+  forceAll,
+  deleteWorld,
+  router,
+  users,
+  attempts,
+  pushModalShowing,
+  showPushModal,
+  forceModalShowing,
+  showForceModal,
+  hideModals,
+}) => {
   const world = parseWorld(text);
   const makeAttemptViewHandler = (uid, num) => () => {
     router.push(`/admin/users/${uid}/attempts/${wid}/${num}`);
   };
   return (
     <div style={styles.containers.self}>
+      <SendModal
+        users={users}
+        wid={wid}
+        send={push}
+        hide={hideModals}
+        show={pushModalShowing}
+        push
+      />
+      <SendModal
+        users={users}
+        wid={wid}
+        send={force}
+        hide={hideModals}
+        show={forceModalShowing}
+        force
+      />
       <div style={styles.containers.topHalf}>
         <div style={styles.containers.titleDesc}>
           <h1>{world.title}</h1>
@@ -103,8 +135,8 @@ export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, p
         <div style={styles.containers.buttonsKW}>
           <ButtonToolbar style={styles.buttons.self}>
             <ButtonGroup>
-              <Button bsStyle="warning">Push</Button>
-              <Button bsStyle="danger">Force</Button>
+              <Button bsStyle="warning" onClick={showPushModal}>Push</Button>
+              <Button bsStyle="danger" onClick={showForceModal}>Force</Button>
             </ButtonGroup>
             <ButtonGroup>
               <Button bsStyle="warning" onClick={() => pushAll(wid)}>Push All</Button>
@@ -163,11 +195,20 @@ export const _WorldView = withRouter(Radium(({ world: { wid, text }, attempts, p
 }));
 
 export default class WorldView extends React.Component  {
-  state = { world: null, attempts: null, loading: true, err: null };
+  state = {
+    loading: true,
+    world: null,
+    attempts: null,
+    users: null,
+    err: null,
+    modals: { push: false, force: false },
+  };
 
   fetchData(props) {
-    props.api.worldInfo(props.params.wid)
-      .then(({ world, attempts }) => this.setState({ world, attempts, loading: false }))
+    Promise.all([props.api.worldInfo(props.params.wid), props.api.listUsers()])
+      .then(([{ world, attempts }, users]) => {
+        this.setState({ world, attempts, users, loading: false })
+      })
       .catch(err => this.setState({ err, loading: false }));
   }
 
@@ -179,17 +220,36 @@ export default class WorldView extends React.Component  {
     if (!equal(nextProps, this.props)) this.fetchData(nextProps);
   }
 
+  showPushModal() {
+    this.setState({ modals: { push: true, force: false } });
+  }
+
+  showForceModal() {
+    this.setState({ modals: { push: false, force: true } });
+  }
+
+  hideModals() {
+    this.setState({ modals: { push: false, force: false } });
+  }
+
   render() {
     if (this.state.err) return <ErrorPage err={this.state.err}/>;
     if (this.state.loading) return <h1>Loading...</h1>;
     return <_WorldView
       world={this.state.world}
       attempts={this.state.attempts}
+      users={this.state.users}
+      push={this.props.api.push}
+      force={this.props.api.force}
       pushAll={this.props.api.pushAll}
       forceAll={this.props.api.forceAll}
       deleteWorld={this.props.api.deleteWorld}
+      pushModalShowing={this.state.modals.push}
+      forceModalShowing={this.state.modals.force}
+      showPushModal={::this.showPushModal}
+      showForceModal={::this.showForceModal}
+      hideModals={::this.hideModals}
     />
   }
 }
-
 
