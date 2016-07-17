@@ -1,7 +1,7 @@
 import { createStore, combineReducers } from 'redux';
 import runKarel from '../KarelWorld/runKarel';
 import * as KWActionCreators from '../KarelWorld/duck';
-import { karel as karelCommands } from '../KarelWorld/karelCommands';
+import * as commands from '../KarelWorld/karelCommands';
 
 export const SET_CODE = 'karel/Editor/SET_CODE';
 export const RUN = 'karel/Editor/RUN';
@@ -21,7 +21,10 @@ const startRunning = (dispatch, getState, api) => {
     combineReducers({ KarelWorld: KWActionCreators.reducer }),
     { KarelWorld: state.KarelWorld }
   );
-  const actions = runKarel(state.Editor.code, karelCommands, store);
+  let cmds = state.KarelWorld.karel.ultra ? commands.ultraKarel :
+    state.KarelWorld.karel.super ? commands.superKarel : commands.karel;
+
+  const actions = runKarel(state.Editor.code, cmds, store);
 
   // Let the server know
   api.sendAttempt(state.KarelWorld.wid, state.Editor.code, store.getState().KarelWorld.won);

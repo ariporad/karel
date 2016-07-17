@@ -7,13 +7,16 @@ import { setTitleDesc } from '../TopBar/duck';
  * Actions
  */
 
-export const MOVE_FORWARD = 'karel/KarelWorld/MOVE_FORWARD';
-export const TURN_LEFT = 'karel/KarelWorld/TURN_LEFT';
-export const PICKUP_CROWN = 'karel/KarelWorld/PICKUP_CROWN';
-export const DIFFUSE_BOMB = 'karel/KarelWorld/DIFFUSE_BOMB';
-export const WIN = 'karel/KarelWorld/WIN';
-export const KAREL_DIED = 'karel/KarelWorld/KAREL_DIED';
-export const SET_WORLD = 'karel/KarelWorld/SET_WORLD';
+export const WIN           = 'karel/KarelWorld/WIN';
+export const SET_WORLD     = 'karel/KarelWorld/SET_WORLD';
+export const TURN_LEFT     = 'karel/KarelWorld/TURN_LEFT';
+export const KAREL_DIED    = 'karel/KarelWorld/KAREL_DIED';
+export const TURN_RIGHT    = 'karel/KarelWorld/TURN_RIGHT';
+export const TURN_AROUND   = 'karel/KarelWorld/TURN_AROUND';
+export const PICKUP_CROWN  = 'karel/KarelWorld/PICKUP_CROWN';
+export const DIFFUSE_BOMB  = 'karel/KarelWorld/DIFFUSE_BOMB';
+export const MOVE_FORWARD  = 'karel/KarelWorld/MOVE_FORWARD';
+export const MOVE_BACKWARD = 'karel/KarelWorld/MOVE_BACKWARD';
 export { STOP } from '../Editor/duck'; // Cheat a bit
 
 export const reset = () => (dispatch, getState) => {
@@ -43,7 +46,7 @@ export const karelDied = err => dispatch => {
 export const reducer = (
   state = {
     bombs: [],
-    karel: { x: 0, y: 0, dir: 0 },
+    karel: { x: 0, y: 0, dir: 0, ultra: false, super: false },
     crown: null,
     lasers: [[false]],
     height: 1,
@@ -87,8 +90,34 @@ export const reducer = (
       }
       return { ...state, karel: { ...state.karel, x, y }, bombs };
     }
+    case MOVE_BACKWARD: {
+      let { x, y, dir } = state.karel; // eslint-disable-line prefer-const
+      if (dir === 0) {        // Right
+        if (state.lasers[y][x]) throw KarelError('Karel hit a laser tripwire!', action.meta);
+        x--;
+      } else if (dir === 1) { // Up
+        y++;
+      } else if (dir === 2) { // Left
+        x++;
+        // This is after x-- because we need to check if theres a laser to the right of our new spot
+        if (state.lasers[y][x]) throw KarelError('Karel triggered a laser tripwire!', action.meta);
+      } else if (dir === 3) { // Down
+        y--;
+      }
+      if (x >= state.width || y >= state.height || y < 0 || x < 0) {
+        throw KarelError('Karel hit a wall!', action.meta);
+      }
+      return { ...state, karel: { ...state.karel, x, y }, bombs };
+    }
     case TURN_LEFT:
       return { ...state, karel: { ...state.karel, dir: (state.karel.dir + 1) % 4 }, bombs };
+    case TURN_RIGHT:
+      let dir = state.karel.dir;
+      dir--;
+      if (dir < 0) dir = 3;
+      return { ...state, karel: { ...state.karel, dir }, bombs };
+    case TURN_AROUND:
+      return { ...state, karel: { ...state.karel, dir: (state.karel.dir + 2) % 4 }, bombs };
     case PICKUP_CROWN:
       if(
         !state.crown ||

@@ -80,7 +80,14 @@ export const _KarelWorld = Radium(({ style, karel, bombs, lasers, height, width,
     <svg style={[style, styles.svg]} viewBox={`0 0 ${width * SIZE} ${height * SIZE}`}>
       {generateBorders(width, height, SIZE)}
       {objects}
-      <KarelSpy cx={c(karel.x)} cy={c(karel.y)} dir={karel.dir} size={SIZE} />
+      <KarelSpy
+        cx={c(karel.x)}
+        cy={c(karel.y)}
+        dir={karel.dir}
+        size={SIZE}
+        superKarel={karel.super}
+        ultraKarel={karel.ultra}
+      />
       {err && <ErrorOverlay err={err} width={width} height={height} size={SIZE} />}
       {won && <Overlay width={width * SIZE} height={height * SIZE} title={'World Complete!'} />}
     </svg>

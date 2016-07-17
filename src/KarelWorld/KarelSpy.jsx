@@ -2,10 +2,14 @@ import karelSVG from 'file!./karel.svg';
 import superkarelSVG from 'file!./superkarel.svg';
 import ultrakarelSVG from 'file!./ultrakarel.svg';
 
-const KarelSpy = ({ cx, cy, dir, size }) => {
+const KarelSpy = ({ cx, cy, dir, size, superKarel = false, ultraKarel = false }) => {
   const pad = size / 8;
   const x = (cx - size / 2) + pad;
   const y = (cy - size / 2) + pad;
+
+  let svg = karelSVG;
+  if (superKarel) svg = superkarelSVG;
+  if (ultraKarel) svg = ultrakarelSVG;
 
   let transform = `rotate(${dir * -90}, ${cx}, ${cy})`;
   // Only flip when going left/right.
@@ -15,7 +19,7 @@ const KarelSpy = ({ cx, cy, dir, size }) => {
 
   return (
     <g transform={transform}>
-      <image x={x} y={y} width={size * .75} height={size * .75} xlinkHref={karelSVG}/>
+      <image x={x} y={y} width={size * .75} height={size * .75} xlinkHref={svg}/>
     </g>
   );
 };
