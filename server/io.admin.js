@@ -44,7 +44,7 @@ export const setupSocket = (socket, io, store) => {
     debug('Creating World:\n%s', world);
     const wid = store.dispatch(createWorld(world));
     debug('Got wid: %s', wid);
-    return wid;
+    return { wid };
   });
 
   on('editWorld', ({ wid, text }) => {
