@@ -1,5 +1,5 @@
 import Immutable from 'immutable';
-import { Router, Route, IndexRoute, browserHistory } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, browserHistory } from 'react-router';
 import App from './App';
 import WorldList from './WorldList';
 import WorldView from './WorldView';
@@ -28,6 +28,7 @@ export default (api) => {
           <Route path=':uid/attempts/:wid/:num' component={injectApi(AttemptView)} />
           <Route path=':uid' component={injectApi(UserView)} />
         </Route>
+        <IndexRedirect to='/admin/worlds' />
         <Route path="*" component={NotFoundError} />
       </Route>
     </Router>
