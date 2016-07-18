@@ -1,6 +1,6 @@
 import Immutable from 'immutable';
 import StatusError from '../StatusError';
-import { PUSH, DELETE_ATTEMPTS_FOR_WORLD } from './users';
+import { PUSH, DELETE_ATTEMPTS_FOR_WORLD, LOCK, UNLOCK } from './users';
 
 const debug = dbg('karel:server:ducks:admin');
 
@@ -77,7 +77,6 @@ export const pushWorldAll = wid => (dispatch, getState) => {
   // Immutable stops the forEach if it returns false, which we don't want.
   state.users.forEach(user => dispatch(pushWorld(wid, user.get('id'))) || true);
 };
-
 export const forceWorldAll = wid => (dispatch, getState) => {
   debug('Forcing world: %s to everyone', wid);
   const state = getState();
@@ -85,6 +84,33 @@ export const forceWorldAll = wid => (dispatch, getState) => {
   state.users.forEach(user => dispatch(forceWorld(wid, user.get('id'))) || true);
 };
 
+export const lock = uid => (dispatch, getState) => {
+  debug('Locking user: %s', uid);
+  const state = getState();
+  let { user } = dispatch(get(null, uid));
+  dispatch({ type: LOCK, payload: uid });
+  if (user.get('connected') && user.get('socket')) user.get('socket').emit('lock');
+};
+export const unlock = uid => (dispatch, getState) => {
+  debug('Unlocking user: %s', uid);
+  const state = getState();
+  let { user } = dispatch(get(null, uid));
+  dispatch({ type: UNLOCK, payload: uid });
+  if (user.get('connected') && user.get('socket')) user.get('socket').emit('unlock');
+};
+
+export const lockAll = () => (dispatch, getState) => {
+  debug('Locking everyone');
+  const state = getState();
+  // Immutable stops the forEach if it returns false, which we don't want.
+  state.users.forEach(user => dispatch(lock(user.get('id'))) || true);
+};
+export const unlockAll = () => (dispatch, getState) => {
+  debug('Unlocking everyone');
+  const state = getState();
+  // Immutable stops the forEach if it returns false, which we don't want.
+  state.users.forEach(user => dispatch(unlock(user.get('id'))) || true);
+};
 
 export default (state = Immutable.fromJS({ next_wid: 1, worlds: {} }), action) => {
   switch (action.type) {

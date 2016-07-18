@@ -40,7 +40,7 @@ const styles = {
   },
 }
 
-export const _UserList = withRouter(Radium(({ users, router }) => {
+export const _UserList = withRouter(Radium(({ users, router, lock, unlock, lockAll, unlockAll }) => {
   const trs = users.map((user, i) => (
     <tr key={i}>
       <td style={styles.td.image}>
@@ -53,7 +53,10 @@ export const _UserList = withRouter(Radium(({ users, router }) => {
       <td style={styles.td.actions}>
         <ButtonToolbar>
           <ButtonGroup>
-            <Button style={styles.lock}>{user.locked ? 'Unlock': 'Lock'}</Button>
+            <Button
+              style={styles.lock}
+              onClick={() => user.locked ? unlock(user.id) : lock(user.id)}
+            >{user.locked ? 'Unlock': 'Lock'}</Button>
           </ButtonGroup>
           <ButtonGroup>
             <Button
@@ -72,8 +75,8 @@ export const _UserList = withRouter(Radium(({ users, router }) => {
         <h2 style={{ margin: 0 }}>Users</h2>
         <div style={{ marginLeft: 'auto' }}>
           <ButtonGroup>
-            <Button style={styles.lock}>Lock All</Button>
-            <Button style={styles.lock}>Unlock All</Button>
+            <Button style={styles.lock} onClick={lockAll}>Lock All</Button>
+            <Button style={styles.lock} onClick={unlockAll}>Unlock All</Button>
           </ButtonGroup>
         </div>
       </div>
@@ -96,8 +99,8 @@ export const _UserList = withRouter(Radium(({ users, router }) => {
 export default class UserList extends React.Component {
   state = { users: [], loading: true, err: null };
 
-  componentDidMount() {
-    this.props.api.listUsers()
+  fetchData(props) {
+    props.api.listUsers()
       .then(users => {
         users = Object.keys(users).map(key => users[key]);
         this.setState({ users, loading: false })
@@ -105,10 +108,29 @@ export default class UserList extends React.Component {
       .catch(err => this.setState({ err }));
   }
 
+  componentDidMount() {
+    this.fetchData(this.props);
+  }
+
+  fetchDataAfter(fn) {
+    return (...args) => {
+     const ret = fn(...args);
+     this.fetchData(this.props);
+     return ret;
+    };
+  }
+
+
   render() {
     if (this.err) return <ErrorPage err={this.state.err} />;
     if (this.loading) return <h1>Loading...</h1>;
-    return <_UserList users={this.state.users} />;
+    return <_UserList
+      users={this.state.users}
+      lock={this.fetchDataAfter(this.props.api.lock)}
+      unlock={this.fetchDataAfter(this.props.api.unlock)}
+      lockAll={this.fetchDataAfter(this.props.api.lockAll)}
+      unlockAll={this.fetchDataAfter(this.props.api.unlockAll)}
+    />;
   }
 };
 

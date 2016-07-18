@@ -2,6 +2,7 @@ import { Style } from 'radium';
 import KarelWorld from './KarelWorld/KarelWorld';
 import Editor from './Editor/Editor';
 import TopBar from './TopBar/TopBar';
+import Locker from './Locker/Locker';
 
 const styles = {
   container: {
@@ -35,6 +36,7 @@ let App = Radium((/* props */) => {
       <TopBar style={[styles.topBar]} />
       <Editor style={[styles.paine, styles.editor]}/>
       <KarelWorld size={100} style={[styles.paine, styles.world]}/>
+      <Locker/>
       <Style rules={{ 'html, body, #root': styles.fillParent }} />
     </div>
   );

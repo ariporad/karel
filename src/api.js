@@ -1,5 +1,6 @@
 import { stringify, parse } from 'circular-json';
 import { pushWorld, forceWorld } from './apiDuck';
+import { lock, unlock } from './Locker/duck';
 import IO from 'socket.io-client';
 import Auth0Lock from 'auth0-lock';
 
@@ -37,8 +38,10 @@ export default () => {
 
   const promiseEmit = (event, data) => new Promise(done => emit(event, data, done));
 
-  on('pushWorld', world => store.dispatch(pushWorld(world)));
+  on('pushWorld',  world => store.dispatch(pushWorld(world)));
   on('forceWorld', world => store.dispatch(forceWorld(world)));
+  on('lock', () => store.dispatch(lock()));
+  on('unlock', () => store.dispatch(unlock()));
 
   /**
    * Public APIs

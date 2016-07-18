@@ -1,12 +1,15 @@
 import Immutable from 'immutable';
 import { get } from './admin';
 
-export const CONNECT = 'karel-server/users/CONNECT';
+export const CONNECT    = 'karel-server/users/CONNECT';
 export const DISCONNECT = 'karel-server/users/DISCONNECT';
-export const ATTEMPT = 'karel-server/users/ATTEMPT';
+export const ATTEMPT    = 'karel-server/users/ATTEMPT';
+export const LOCK       = 'karel-server/users/LOCK';
+export const UNLOCK     = 'karel-server/users/UNLOCK';
+export const PUSH       = 'karel-server/users/PUSH';
+
 // For when a world is deleted
 export const DELETE_ATTEMPTS_FOR_WORLD = 'karel-server/users/DELETE_ATTEMPTS_FOR_WORLD';
-export const PUSH = 'karel-server/users/PUSH';
 
 const debug = dbg('karel:server:ducks:user');
 
@@ -79,6 +82,8 @@ export default (state = new Immutable.Map(), action) => {
     }
     case PUSH:
       return state.set(action.payload.get('id'), action.payload);
+    case LOCK:   return state.setIn([action.payload, 'locked'], true);
+    case UNLOCK: return state.setIn([action.payload, 'locked'], false);
     default: return state;
   }
 };

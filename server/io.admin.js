@@ -10,6 +10,10 @@ import {
   forceWorldAll,
   deleteWorld,
   editWorld,
+  lock,
+  unlock,
+  lockAll,
+  unlockAll,
 } from './ducks/admin';
 
 const debug = dbg('karel:server:admin');
@@ -56,14 +60,21 @@ export const setupSocket = (socket, io, store) => {
     store.dispatch(deleteWorld(wid));
   });
 
-  on('push', ({ wid, uid }) => store.dispatch(pushWorld(wid, uid)));
+  on('push',  ({ wid, uid }) => store.dispatch(pushWorld(wid, uid)));
   on('force', ({ wid, uid }) => store.dispatch(forceWorld(wid, uid)));
 
-  on('pushAll', wid => store.dispatch(pushWorldAll(wid)));
+  on('pushAll',  wid => store.dispatch(pushWorldAll(wid)));
   on('forceAll', wid => store.dispatch(forceWorldAll(wid)));
 
+  on('lock',   ({ uid }) => store.dispatch(lock(uid)));
+  on('unlock', ({ uid }) => store.dispatch(unlock(uid)));
+
+  on('lockAll',   () => store.dispatch(lockAll()));
+  on('unlockAll', () => store.dispatch(unlockAll()));
+
   on('listWorlds', () => store.getState().admin.get('worlds').toJS());
-  on('listUsers', () => store.getState().users.toJS());
+  on('listUsers',  () => store.getState().users.toJS());
+
   on('userInfo', uid => {
     if (!store.getState().users.has(uid)) throw StatusError(404, 'User Not Found');
     return store.getState().users.get(uid).toJS();

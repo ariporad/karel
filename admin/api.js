@@ -58,14 +58,20 @@ export default () => {
   const push = (wid, uid) => promiseEmit('push', { wid, uid });
   const force = (wid, uid) => promiseEmit('force', { wid, uid });
 
-  const pushAll = wid => promiseEmit('pushAll', wid);
-  const forceAll = wid => promiseEmit('forceAll', wid);
+  const pushAll    = wid => promiseEmit('pushAll', wid);
+  const forceAll   = wid => promiseEmit('forceAll', wid);
 
-  const listWorlds = () => promiseEmit('listWorlds', null);
-  const listUsers = () => promiseEmit('listUsers', null);
+  const lock       = uid => promiseEmit('lock',   { uid });
+  const unlock     = uid => promiseEmit('unlock', { uid });
 
-  const worldInfo = wid => promiseEmit('worldInfo', wid);
-  const userInfo = uid => promiseEmit('userInfo', uid);
+  const lockAll    = ()  => promiseEmit('lockAll');
+  const unlockAll  = ()  => promiseEmit('unlockAll');
+
+  const listWorlds = ()  => promiseEmit('listWorlds', null);
+  const listUsers  = ()  => promiseEmit('listUsers', null);
+
+  const worldInfo  = wid => promiseEmit('worldInfo', wid);
+  const userInfo   = uid => promiseEmit('userInfo', uid);
 
   const publicAPI = {
     createWorld,
@@ -80,6 +86,10 @@ export default () => {
     force,
     pushAll,
     forceAll,
+    lock,
+    unlock,
+    lockAll,
+    unlockAll,
   };
 
   return new Promise((resolve, reject) => {
