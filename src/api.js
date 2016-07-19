@@ -38,11 +38,6 @@ export default () => {
 
   const promiseEmit = (event, data) => new Promise(done => emit(event, data, done));
 
-  on('pushWorld',  world => store.dispatch(pushWorld(world)));
-  on('forceWorld', world => store.dispatch(forceWorld(world)));
-  on('lock', () => store.dispatch(lock()));
-  on('unlock', () => store.dispatch(unlock()));
-
   /**
    * Public APIs
    */
@@ -51,6 +46,16 @@ export default () => {
   const setStore = store_ => store = store_;
 
   const publicAPI = { sendAttempt, setStore };
+
+  on('pushWorld',  world => store.dispatch(pushWorld(world)));
+  on('forceWorld', world => store.dispatch(forceWorld(world)));
+  on('lock', () => {
+    const state = store.getState();
+    api.sendAttempt(state.KarelWorld.wid, state.Editor.code, false);
+    store.dispatch(lock())
+  });
+  on('unlock', () => store.dispatch(unlock()));
+
 
   return new Promise((resolve, reject) => {
     on('authenticated', () => {
