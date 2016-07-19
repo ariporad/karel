@@ -3,3 +3,4 @@
 - [ ] Going to /admin is a blank page.
 - [ ] The bombs need better graphics.
 - [ ] The user authentication flow is terrible.
+- [ ] Rename crownLost() => crownPresent()

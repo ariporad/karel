@@ -60,7 +60,15 @@ export const reducer = (
 ) => {
   // Decrement all the bombs
   let bombs = state.bombs;
-  if ([MOVE_FORWARD, TURN_LEFT, PICKUP_CROWN, DIFFUSE_BOMB].indexOf(action.type) !== -1) {
+  if ([
+    MOVE_FORWARD,
+    MOVE_BACKWARD,
+    TURN_LEFT,
+    TURN_RIGHT,
+    TURN_AROUND,
+    PICKUP_CROWN,
+    DIFFUSE_BOMB,
+  ].indexOf(action.type) !== -1) {
     // These are all no-ops if not running.
     bombs = state.bombs.map(bomb => {
       if (typeof bomb.limit === 'boolean') return bomb;

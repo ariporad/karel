@@ -94,7 +94,9 @@ export const width        = (dispatch, getState) => line => getState().KarelWorl
 export const height       = (dispatch, getState) => line => getState().KarelWorld.height;
 
 export const onCrown = (dispatch, getState) => line => {
-  const { karel: { x: kx, y: ky }, crown: { x: cx, y: cy } } = getState().KarelWorld;
+  const state = getState();
+  if (!state.KarelWorld.crown) return false;
+  const { karel: { x: kx, y: ky }, crown: { x: cx, y: cy } } = state.KarelWorld;
   return kx === cx && ky === cy;
 };
 export const onBomb  = (dispatch, getState) => line => {

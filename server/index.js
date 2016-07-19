@@ -19,7 +19,7 @@ const server = createServer(app);
 const io = IO(server);
 const store = createStore({ path: storagePath });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   debug('Enabling Webpack');
   // Using require so they can be conditonally included.
   const webpack = require('webpack');
