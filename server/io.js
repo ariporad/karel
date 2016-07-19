@@ -25,6 +25,7 @@ export const setupSocket = (socket, io, store) => {
     const uid = user.get('id');
     debug('User Connected:', uid);
     user.get('queue').forEach(world => socket.emit('pushWorld', world));
+    if (user.get('locked')) socket.emit('lock');
     socket.on('disconnect', () => {
       debug('User Disconnected:', uid);
       store.dispatch(disconnect(uid))

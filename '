@@ -29,19 +29,17 @@ export const connect = (token, decoded, profile, socket = null) => (dispatch, ge
       connected: true,
       locked: false,
       queue: [],
-      unlockable: false,
-      admin: false,
     });
   }
-  user = user.merge({ token, socket, decoded, profile, ...profile.app_metadata });
-  dispatch({ type: CONNECT, payload: user });
+  user = user.merge({
+    token, socket, decoded, profile, admin: !!profile.admin, lockable: !!profile.lockable
+  });
+  dispatch({ type: CONNECT, payload: { user, socket } });
   return user;
 }
 
 export const disconnect = uid => (dispatch, getState) => {
-  let { user } = dispatch(get(null, uid));
-  user = user.set('connected', false);
-  user = user.set('socket', null);
+  const { user } = dispatch(get(null, uid));
   dispatch({ type: DISCONNECT, payload: user });
 };
 
@@ -52,8 +50,18 @@ export const attempt = (uid, code, wid, won) => (dispatch, getState) => {
 
 export default (state = new Immutable.Map(), action) => {
   switch (action.type) {
-    case CONNECT: return state.set(action.payload.get('id'), action.payload);
-    case DISCONNECT: state.set(action.payload.get('id'), action.payload);
+    case CONNECT: {
+      let user = action.payload.user;
+      user = user.set('connected', true);
+      user = user.set('socket', action.payload.socket);
+      return state.set(user.get('id'), user);
+    }
+    case DISCONNECT: {
+      let user = action.payload;
+      user = user.set('connected', false);
+      user = user.set('socket', null);
+      return state.set(user.get('id'), user);
+    }
     case ATTEMPT: {
       let { user, wid, code, won } = action.payload;
       user = user.updateIn(['attempts', wid], (attempts = new Immutable.List()) => {

@@ -13,7 +13,7 @@ const styles = {
   td: {
     actions: {
       whiteSpace: 'nowrap',
-      width: 150,
+      width: 175,
     },
     name: {
     },
@@ -53,10 +53,10 @@ export const _UserList = withRouter(Radium(({ users, router, lock, unlock, lockA
       <td style={styles.td.actions}>
         <ButtonToolbar>
           <ButtonGroup>
-            <Button
+            {user.unlockable ? <Button style={styles.lock} disabled>Unlockable</Button> : <Button
               style={styles.lock}
               onClick={() => user.locked ? unlock(user.id) : lock(user.id)}
-            >{user.locked ? 'Unlock': 'Lock'}</Button>
+            >{user.locked ? 'Unlock': 'Lock'}</Button>}
           </ButtonGroup>
           <ButtonGroup>
             <Button

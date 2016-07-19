@@ -88,6 +88,7 @@ export const lock = uid => (dispatch, getState) => {
   debug('Locking user: %s', uid);
   const state = getState();
   let { user } = dispatch(get(null, uid));
+  if (user.get('unlockable')) return;
   dispatch({ type: LOCK, payload: uid });
   if (user.get('connected') && user.get('socket')) user.get('socket').emit('lock');
 };
