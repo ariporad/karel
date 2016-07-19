@@ -113,6 +113,16 @@ export const unlockAll = () => (dispatch, getState) => {
   state.users.forEach(user => dispatch(unlock(user.get('id'))) || true);
 };
 
+export const forceAttempt = (wid, uid, num) => (dispatch, getState) => {
+  debug('Forcing Attempt #%s of WID:%s to UID:%s', num, wid, uid);
+  dispatch(forceWorld(wid, uid));
+
+  const { user } = dispatch(get(null, uid));
+  if (user.get('connected') && user.get('socket')) {
+    user.get('socket').emit('setCode', user.get('attempts').get(wid).get(num).get('code'));
+  }
+};
+
 export default (state = Immutable.fromJS({ next_wid: 1, worlds: {} }), action) => {
   switch (action.type) {
     case CREATE_WORLD:

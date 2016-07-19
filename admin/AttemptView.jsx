@@ -1,4 +1,4 @@
-import { Well } from 'react-bootstrap';
+import { Well, Button } from 'react-bootstrap';
 import { withRouter, Link } from 'react-router';
 import { formatTimestamp } from './utils';
 import equal from 'deep-equal';
@@ -54,7 +54,7 @@ const styles = {
   },
 };
 
-export const _AttemptView = Radium(({ user, world, num }) => {
+export const _AttemptView = Radium(({ user, world, num, forceAttempt }) => {
   const attempt = user.attempts[world.wid][num];
   const urlPrefix = `/admin/users/${encodeURIComponent(user.id)}/attempts/${world.wid}/`;
   const next = `${urlPrefix}${num + 1}`;
@@ -64,9 +64,15 @@ export const _AttemptView = Radium(({ user, world, num }) => {
       <div>
         <h2>User: {user.profile.name} &middot; {user.profile.email}</h2>
         <h2>World: {world.text.trim().split('\n')[0]} ({world.wid})</h2>
-        <h2>Attempt: #{num} ({formatTimestamp(attempt.date)})
+        <h2 style={{ marginTop: 0, marginRight: 20, display: 'inline-block' }}>
+          Attempt: #{num} ({formatTimestamp(attempt.date)})
           (<Link to={prev}>&lt; prev</Link> <Link to={next}>next &gt;</Link>)
         </h2>
+        <Button
+          bsStyle="danger"
+          style={{ marginBottom: 10 }}
+          onClick={() => forceAttempt(world.wid, user.id, num)}
+        >Force</Button>
       </div>
       <div style={styles.main.panels.self}>
         <div style={styles.main.panels.code}>
@@ -125,6 +131,7 @@ class AttemptView extends React.Component {
         user={this.state.user}
         world={this.state.world}
         num={parseInt(this.props.params.num, 10)}
+        forceAttempt={this.props.api.forceAttempt}
       />
     );
   }

@@ -33,7 +33,7 @@ export const connect = (token, decoded, profile, socket = null) => (dispatch, ge
       admin: false,
     });
   }
-  user = user.merge({ token, socket, decoded, profile, ...profile.app_metadata });
+  user = user.merge({ token, socket, decoded, profile, ...profile.app_metadata, connected: true });
   dispatch({ type: CONNECT, payload: user });
   return user;
 }

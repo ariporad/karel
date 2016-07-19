@@ -73,6 +73,8 @@ export default () => {
   const worldInfo  = wid => promiseEmit('worldInfo', wid);
   const userInfo   = uid => promiseEmit('userInfo', uid);
 
+  const forceAttempt = (wid, uid, num) => promiseEmit('forceAttempt', { wid, uid, num });
+
   const publicAPI = {
     createWorld,
     deleteWorld,
@@ -90,6 +92,7 @@ export default () => {
     unlock,
     lockAll,
     unlockAll,
+    forceAttempt,
   };
 
   return new Promise((resolve, reject) => {

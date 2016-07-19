@@ -14,6 +14,7 @@ import {
   unlock,
   lockAll,
   unlockAll,
+  forceAttempt,
 } from './ducks/admin';
 
 const debug = dbg('karel:server:admin');
@@ -69,11 +70,13 @@ export const setupSocket = (socket, io, store) => {
   on('lock',   ({ uid }) => store.dispatch(lock(uid)));
   on('unlock', ({ uid }) => store.dispatch(unlock(uid)));
 
-  on('lockAll',   () => store.dispatch(lockAll()));
-  on('unlockAll', () => store.dispatch(unlockAll()));
+  on('lockAll',      () => store.dispatch(lockAll()));
+  on('unlockAll',    () => store.dispatch(unlockAll()));
 
-  on('listWorlds', () => store.getState().admin.get('worlds').toJS());
-  on('listUsers',  () => store.getState().users.toJS());
+  on('listWorlds',   () => store.getState().admin.get('worlds').toJS());
+  on('listUsers',    () => store.getState().users.toJS());
+
+  on('forceAttempt', ({ wid, uid, num }) => store.dispatch(forceAttempt(wid, uid, num)));
 
   on('userInfo', uid => {
     if (!store.getState().users.has(uid)) throw StatusError(404, 'User Not Found');

@@ -1,5 +1,6 @@
 import { stringify, parse } from 'circular-json';
 import { pushWorld, forceWorld } from './apiDuck';
+import { setCode } from './Editor/duck';
 import { lock, unlock } from './Locker/duck';
 import IO from 'socket.io-client';
 import Auth0Lock from 'auth0-lock';
@@ -49,6 +50,10 @@ export default () => {
 
   on('pushWorld',  world => store.dispatch(pushWorld(world)));
   on('forceWorld', world => store.dispatch(forceWorld(world)));
+  on('setCode',    code  => {
+    debugger;
+    store.dispatch(setCode(code))
+  });
   on('lock', () => {
     const state = store.getState();
     api.sendAttempt(state.KarelWorld.wid, state.Editor.code, false);
