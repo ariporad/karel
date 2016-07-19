@@ -53,7 +53,7 @@ export const attempt = (uid, code, wid, won) => (dispatch, getState) => {
 export default (state = new Immutable.Map(), action) => {
   switch (action.type) {
     case CONNECT: return state.set(action.payload.get('id'), action.payload);
-    case DISCONNECT: state.set(action.payload.get('id'), action.payload);
+    case DISCONNECT: return state.set(action.payload.get('id'), action.payload);
     case ATTEMPT: {
       let { user, wid, code, won } = action.payload;
       user = user.updateIn(['attempts', wid], (attempts = new Immutable.List()) => {
