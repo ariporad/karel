@@ -110,7 +110,15 @@ export const randomChance = (dispatch, getState) => (line, outOf) => {
 }
 
 // TODO: UltraKarel
-export const karel = { moveForward, turnLeft, pickupCrown, diffuseBomb };
+export const karel = {
+  moveForward,
+  turnLeft,
+  pickupCrown,
+  // Spelling Errors
+  diffuseBomb,
+  deffuseBomb: diffuseBomb,
+  defuseBomb: diffuseBomb,
+};
 export const superKarel = {
   ...karel,
   turnRight,

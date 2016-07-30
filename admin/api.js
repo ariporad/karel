@@ -138,6 +138,10 @@ export default () => {
         lock.show({
           callbackURL: document.location.origin + '/admin',
           responseType: 'token',
+          disableResetAction: true,
+          disableSignupAction: true,
+          usernameStyle: 'username',
+          closable: false,
         });
       }
     };

@@ -10,7 +10,7 @@ const styles = {
   },
 };
 
-const App = ({ children, location, router }) => {
+const App = ({ children, location, router, api }) => {
   const navs = [
     ['/admin/worlds', 'Worlds'],
     ['/admin/users', 'Users'],
@@ -30,6 +30,12 @@ const App = ({ children, location, router }) => {
         <Navbar.Collapse>
           <Nav activeKey={location.pathname.replace(/\/$/i, '')}>
             {navs}
+            <NavItem
+              onClick={() => { api.lockAll(); document.location.reload(); }}
+            >Lock All</NavItem>
+            <NavItem
+              onClick={() => { api.unlockAll(); document.location.reload(); }}
+            >Unlock All</NavItem>
           </Nav>
         </Navbar.Collapse>
       </Navbar>

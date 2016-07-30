@@ -88,7 +88,12 @@ export default () => {
         });
       });
     } else {
-      lock.show();
+      lock.show({
+        disableSignupAction: true,
+        disableResetAction: true,
+        usernameStyle: 'username',
+        closable: false,
+      });
     }
   });
 };
